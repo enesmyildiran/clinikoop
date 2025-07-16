@@ -1,0 +1,49 @@
+{
+  "description": "Clinikoop, diş kliniklerinin hasta teklif süreçlerini yönetmesine odaklanan, link tabanlı hasta erişimi sunan, PDF üretimi destekleyen tek-klinik yapılı bir SaaS platformudur. Bu rules dosyası, Cursor AI'nın projeye özel kod üretmesini sağlar.",
+  "rules": [
+    {
+      "trigger": "project_start",
+      "action": "Use Next.js App Router with TypeScript, Tailwind CSS for styling, Prisma ORM for database (PostgreSQL). Focus on performance, simplicity, and maintainable code."
+    },
+    {
+      "trigger": "file_structure",
+      "action": "Organize files in app/, components/, lib/, prisma/, and types/. Use descriptive folder names. Pages must follow the new App Router layout."
+    },
+    {
+      "trigger": "ui_design",
+      "action": "Design all pages to be fully responsive for mobile, tablet, desktop, and large screens (TV). Use Tailwind utility classes. Prioritize whitespace, clarity, and rounded UI with soft shadows."
+    },
+    {
+      "trigger": "pdf_handling",
+      "action": "Use html2pdf.js or react-pdf to generate PDF offers. Admin should be able to customize header, logo, colors, and layout. Output must support images and long text."
+    },
+    {
+      "trigger": "roles_and_auth",
+      "action": "There is no login for patients. Patients access offers via secure tokenized link and must verify with a secondary identifier (e.g. last 4 digits of phone). Admin and Sales roles have full login via NextAuth or Clerk."
+    },
+    {
+      "trigger": "data_modeling",
+      "action": "Create and maintain Prisma models for User, Patient, Offer, Reminder, and Setting. Every model must include createdAt and updatedAt fields. Use soft delete where needed."
+    },
+    {
+      "trigger": "component_creation",
+      "action": "Write all components as functional components using arrow functions. Use PascalCase for component names. Reuse UI components where possible. Keep logic separate from UI where applicable."
+    },
+    {
+      "trigger": "api_routes",
+      "action": "Define all backend logic under app/api/ using route handlers. Validate inputs and return JSON responses. Avoid cluttering UI files with business logic."
+    },
+    {
+      "trigger": "offer_page",
+      "action": "Offer pages must be accessible via slug (e.g., /offer/[slug]). No login is required. Include patient name, treatment plan, price, images, and download PDF button."
+    },
+    {
+      "trigger": "reminders_and_notes",
+      "action": "Allow users to create personal or team-visible reminders. Notes can be attached to offers. Only visible to internal users. No chat system exists."
+    },
+    {
+      "trigger": "language_and_docs",
+      "action": "All code comments, variable names, and documentation must be written in English. Prefer simple and meaningful names."
+    }
+  ]
+}
