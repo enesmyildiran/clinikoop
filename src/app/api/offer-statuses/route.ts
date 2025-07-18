@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { getCurrentClinicId } from '@/lib/clinic-routing'
 import { z } from 'zod'
 
 const offerStatusSchema = z.object({
@@ -13,7 +14,17 @@ const offerStatusSchema = z.object({
 
 export async function GET() {
   try {
+    const clinicId = await getCurrentClinicId();
+    
+    if (!clinicId) {
+      return NextResponse.json(
+        { success: false, message: 'Klinik bulunamadı' },
+        { status: 404 }
+      )
+    }
+
     const statuses = await prisma.offerStatus.findMany({
+      where: { clinicId },
       orderBy: { order: 'asc' },
     })
     
@@ -29,13 +40,25 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const clinicId = await getCurrentClinicId();
+    
+    if (!clinicId) {
+      return NextResponse.json(
+        { success: false, message: 'Klinik bulunamadı' },
+        { status: 404 }
+      )
+    }
+
     const body = await req.json()
     const validatedData = offerStatusSchema.parse(body)
 
     // Eğer yeni durum varsayılan olarak işaretleniyorsa, diğerlerini varsayılan olmaktan çıkar
     if (validatedData.isDefault) {
       await prisma.offerStatus.updateMany({
-        where: { isDefault: true },
+        where: { 
+          isDefault: true,
+          clinicId 
+        },
         data: { isDefault: false }
       })
     }
@@ -48,6 +71,7 @@ export async function POST(req: NextRequest) {
         order: validatedData.order,
         isDefault: validatedData.isDefault || false,
         isActive: validatedData.isActive !== false, // Default true
+        clinicId,
       }
     })
 

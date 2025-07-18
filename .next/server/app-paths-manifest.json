@@ -1,15 +1,15 @@
 {
-  "/api/reminders/route": "app/api/reminders/route.js",
-  "/api/offers/route": "app/api/offers/route.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/api/reminders/[id]/route": "app/api/reminders/[id]/route.js",
+  "/api/metrics/route": "app/api/metrics/route.js",
+  "/api/metrics/business/route": "app/api/metrics/business/route.js",
+  "/api/metrics/database/route": "app/api/metrics/database/route.js",
   "/api/patients/route": "app/api/patients/route.js",
-  "/reminders/new/page": "app/reminders/new/page.js",
-  "/performance/page": "app/performance/page.js",
+  "/api/metrics/api/route": "app/api/metrics/api/route.js",
+  "/api/offers/route": "app/api/offers/route.js",
+  "/api/reminders/route": "app/api/reminders/route.js",
   "/api/offer-statuses/route": "app/api/offer-statuses/route.js",
-  "/reminders/page": "app/reminders/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
   "/admin/page": "app/admin/page.js",
-  "/reminders/[id]/page": "app/reminders/[id]/page.js",
-  "/patients/page": "app/patients/page.js",
-  "/api/referral-sources/route": "app/api/referral-sources/route.js"
+  "/site/reminders/new/page": "app/site/reminders/new/page.js",
+  "/site/dashboard/page": "app/site/dashboard/page.js",
+  "/site/reminders/page": "app/site/reminders/page.js"
 }

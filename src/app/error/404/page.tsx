@@ -19,28 +19,28 @@ const quickLinks = [
     title: 'Dashboard',
     description: 'Ana kontrol paneli',
     icon: <FaChartBar className="text-blue-600" />,
-    href: '/dashboard',
+    href: '/site/dashboard',
     color: 'bg-blue-50 hover:bg-blue-100'
   },
   {
     title: 'Hastalar',
     description: 'Hasta yönetimi',
     icon: <FaUsers className="text-green-600" />,
-    href: '/patients',
+    href: '/site/patients',
     color: 'bg-green-50 hover:bg-green-100'
   },
   {
     title: 'Teklifler',
     description: 'Teklif yönetimi',
     icon: <FaFileAlt className="text-purple-600" />,
-    href: '/offers',
+    href: '/site/offers',
     color: 'bg-purple-50 hover:bg-purple-100'
   },
   {
     title: 'Ayarlar',
     description: 'Sistem ayarları',
     icon: <FaCog className="text-orange-600" />,
-    href: '/settings',
+    href: '/site/settings',
     color: 'bg-orange-50 hover:bg-orange-100'
   }
 ]
@@ -138,7 +138,7 @@ export default function Error404Page() {
             </Link>
 
             <Link
-              href="/dashboard"
+              href="/site/dashboard"
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-200 font-medium"
             >
               <FaRocket className="text-sm" />
@@ -157,21 +157,21 @@ export default function Error404Page() {
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Link
-                href="/settings"
+                href="/site/settings"
                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
                 Ayarlar
               </Link>
               <span className="text-gray-400 hidden sm:inline">•</span>
               <Link
-                href="/patients"
+                href="/site/patients"
                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
                 Hasta Yönetimi
               </Link>
               <span className="text-gray-400 hidden sm:inline">•</span>
               <Link
-                href="/offers"
+                href="/site/offers"
                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
                 Teklif Yönetimi

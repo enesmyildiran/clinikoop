@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getClinicIdFromRequest } from '@/lib/clinic-routing';
+import { patientsCreated } from '@/lib/metrics';
 import { z } from 'zod';
 
 const patientSchema = z.object({
@@ -30,22 +32,53 @@ const patientSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const id = req.nextUrl.searchParams.get('id');
-  if (id) {
-    const patient = await prisma.patient.findUnique({
-      where: { id, isDeleted: false },
+  try {
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(req);
+    
+    const id = req.nextUrl.searchParams.get('id');
+    if (id) {
+      const whereClause: any = { id, isDeleted: false };
+      if (clinicId) {
+        whereClause.clinicId = clinicId;
+      }
+      
+      const patient = await prisma.patient.findUnique({
+        where: whereClause,
+      });
+      return NextResponse.json({ patient });
+    }
+    
+    const whereClause: any = { isDeleted: false };
+    if (clinicId) {
+      whereClause.clinicId = clinicId;
+    }
+    
+    const patients = await prisma.patient.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json({ patient });
+    return NextResponse.json({ patients });
+  } catch (error) {
+    console.error('Error fetching patients:', error);
+    return NextResponse.json(
+      { success: false, message: 'Sunucu hatası' },
+      { status: 500 }
+    );
   }
-  const patients = await prisma.patient.findMany({
-    where: { isDeleted: false },
-    orderBy: { createdAt: 'desc' },
-  });
-  return NextResponse.json({ patients });
 }
 
 export async function POST(req: NextRequest) {
   try {
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(req);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
+    
     const body = await req.json();
     console.log('API/POST /patients - Gelen veri:', body);
     const parsed = patientSchema.safeParse(body);
@@ -54,13 +87,14 @@ export async function POST(req: NextRequest) {
       console.log('API/POST /patients - Zod validation hatası:', parsed.error);
       return NextResponse.json({ error: 'Geçersiz veri', details: parsed.error.errors }, { status: 400 });
     }
-    // Benzersiz telefon/email kontrolü
+    // Benzersiz telefon/email kontrolü (aynı klinik içinde)
     const existing = await prisma.patient.findFirst({
       where: {
         OR: [
           { phone: parsed.data.phone },
           { email: parsed.data.email || undefined },
         ],
+        clinicId: clinicId,
         isDeleted: false,
       },
     });
@@ -84,8 +118,35 @@ export async function POST(req: NextRequest) {
     } else {
       data.birthDate = undefined;
     }
+    
+    // Kullanıcı oluştur veya mevcut kullanıcıyı bul
+    let user = await prisma.clinicUser.findFirst({
+      where: {
+        email: 'admin@clinikoop.com',
+        clinicId: clinicId,
+      },
+    });
+
+    if (!user) {
+      user = await prisma.clinicUser.create({
+        data: {
+          email: 'admin@clinikoop.com',
+          name: 'Admin User',
+          role: 'ADMIN',
+          password: 'hashedpassword',
+          clinicId: clinicId,
+        },
+      });
+    }
+
+    // ClinicId ve createdById'yi ekle
+    const patientData = { ...data, clinicId, createdById: user.id };
+    
     // Yeni alanlar doğrudan data objesinde mevcut, Prisma create ve update ile kaydedilecek
-    const patient = await prisma.patient.create({ data });
+    const patient = await prisma.patient.create({ data: patientData });
+
+    // Metrikleri kaydet
+    patientsCreated.inc({ clinic_id: clinicId });
     console.log('API/POST /patients - Kayıt başarılı:', patient);
     return NextResponse.json({ patient });
   } catch (e) {
@@ -95,22 +156,46 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const id = req.nextUrl.searchParams.get('id');
-  if (!id) {
-    return NextResponse.json({ error: 'id parametresi gerekli' }, { status: 400 });
+  try {
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(req);
+    if (!clinicId) {
+      return NextResponse.json({ error: 'Klinik bilgisi bulunamadı' }, { status: 400 });
+    }
+    
+    const id = req.nextUrl.searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ error: 'id parametresi gerekli' }, { status: 400 });
+    }
+    const patient = await prisma.patient.updateMany({
+      where: { 
+        id, 
+        clinicId: clinicId,
+        isDeleted: false 
+      },
+      data: { isDeleted: true },
+    });
+    if (patient.count === 0) {
+      return NextResponse.json({ error: 'Hasta bulunamadı' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting patient:', error);
+    return NextResponse.json(
+      { success: false, message: 'Sunucu hatası' },
+      { status: 500 }
+    );
   }
-  const patient = await prisma.patient.updateMany({
-    where: { id, isDeleted: false },
-    data: { isDeleted: true },
-  });
-  if (patient.count === 0) {
-    return NextResponse.json({ error: 'Hasta bulunamadı' }, { status: 404 });
-  }
-  return NextResponse.json({ success: true });
 }
 
 export async function PUT(req: NextRequest) {
   try {
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(req);
+    if (!clinicId) {
+      return NextResponse.json({ error: 'Klinik bilgisi bulunamadı' }, { status: 400 });
+    }
+    
     const id = req.nextUrl.searchParams.get('id');
     if (!id) {
       return NextResponse.json({ error: 'id parametresi gerekli' }, { status: 400 });
@@ -126,8 +211,14 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Geçersiz veri', details: parsed.error.errors }, { status: 400 });
     }
 
-    // Mevcut hastayı çek
-    const existingPatient = await prisma.patient.findUnique({ where: { id, isDeleted: false } });
+    // Mevcut hastayı çek (aynı klinik içinde)
+    const existingPatient = await prisma.patient.findUnique({ 
+      where: { 
+        id, 
+        clinicId: clinicId,
+        isDeleted: false 
+      } 
+    });
     if (!existingPatient) {
       return NextResponse.json({ error: 'Hasta bulunamadı' }, { status: 404 });
     }
@@ -169,7 +260,11 @@ export async function PUT(req: NextRequest) {
     }
 
     const patient = await prisma.patient.update({
-      where: { id, isDeleted: false },
+      where: { 
+        id, 
+        clinicId: clinicId,
+        isDeleted: false 
+      },
       data: data,
     });
     console.log('API/PUT /patients - Güncelleme başarılı:', patient);

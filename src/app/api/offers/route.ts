@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { getClinicIdFromRequest } from '@/lib/clinic-routing'
+import { offersCreated, databaseQueryDuration } from '@/lib/metrics'
 
 // Teklif verisi için tip tanımı
 interface OfferData {
@@ -40,10 +42,21 @@ interface OfferData {
 
 export async function GET(request: NextRequest) {
   try {
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(request);
+    
+    // Filtreleme koşullarını hazırla
+    const whereClause: any = {
+      isDeleted: false,
+    };
+    
+    // Eğer clinicId varsa, sadece o kliniğin tekliflerini getir
+    if (clinicId) {
+      whereClause.clinicId = clinicId;
+    }
+
     const offers = await prisma.offer.findMany({
-      where: {
-        isDeleted: false,
-      },
+      where: whereClause,
       include: {
         patient: {
           select: {
@@ -80,10 +93,40 @@ export async function POST(req: NextRequest) {
   try {
     const body: OfferData = await req.json();
     
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(req);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
+    
+    // Kullanıcı oluştur veya mevcut kullanıcıyı bul
+    let user = await prisma.clinicUser.findFirst({
+      where: {
+        email: 'admin@clinikoop.com',
+        clinicId: clinicId,
+      },
+    });
+
+    if (!user) {
+      user = await prisma.clinicUser.create({
+        data: {
+          email: 'admin@clinikoop.com',
+          name: 'Admin User',
+          role: 'ADMIN',
+          password: 'hashedpassword', // Gerçek uygulamada hash'lenmiş olmalı
+          clinicId: clinicId,
+        },
+      });
+    }
+
     // Önce hasta oluştur veya mevcut hastayı bul
     let patient = await prisma.patient.findFirst({
       where: {
         phone: body.patientInfo.phone,
+        clinicId: clinicId,
         isDeleted: false,
       },
     });
@@ -95,24 +138,8 @@ export async function POST(req: NextRequest) {
           email: body.patientInfo.email,
           phone: body.patientInfo.phone,
           notes: body.patientInfo.specialNotes,
-        },
-      });
-    }
-
-    // Kullanıcı oluştur veya mevcut kullanıcıyı bul
-    let user = await prisma.user.findFirst({
-      where: {
-        email: 'admin@clinikoop.com',
-      },
-    });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: 'admin@clinikoop.com',
-          name: 'Admin User',
-          role: 'ADMIN',
-          password: 'hashedpassword', // Gerçek uygulamada hash'lenmiş olmalı
+          clinicId: clinicId,
+          createdById: user.id,
         },
       });
     }
@@ -151,9 +178,14 @@ export async function POST(req: NextRequest) {
         statusId: defaultStatus.id, // Yeni durum sistemi
         patientId: patient.id,
         userId: user.id,
+        clinicId: clinicId,
+        createdById: user.id,
         validUntil: body.validUntil ? new Date(body.validUntil) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     });
+
+    // Metrikleri kaydet
+    offersCreated.inc({ clinic_id: clinicId, status: defaultStatus.name });
 
     // Tedavileri oluştur
     for (const treatmentDetail of body.treatmentDetails) {
@@ -181,25 +213,37 @@ export async function POST(req: NextRequest) {
           isPrivate: true,
           offerId: offer.id,
           userId: user.id,
+          clinicId: clinicId,
         },
       });
     }
 
-    // Şablon ve doğrulama bilgilerini Setting olarak kaydet
+    // Şablon ve doğrulama bilgilerini ClinicSetting olarak kaydet
     if (body.selectedTemplate) {
-      await prisma.setting.upsert({
-        where: { key: `offer_${offer.id}_template` },
+      await prisma.clinicSetting.upsert({
+        where: { 
+          clinicId_key: {
+            clinicId: clinicId,
+            key: `offer_${offer.id}_template`
+          }
+        },
         update: { value: body.selectedTemplate },
         create: {
           key: `offer_${offer.id}_template`,
           value: body.selectedTemplate,
+          clinicId: clinicId,
         },
       });
     }
 
     if (body.verificationMethod && body.verificationValue) {
-      await prisma.setting.upsert({
-        where: { key: `offer_${offer.id}_verification` },
+      await prisma.clinicSetting.upsert({
+        where: { 
+          clinicId_key: {
+            clinicId: clinicId,
+            key: `offer_${offer.id}_verification`
+          }
+        },
         update: { 
           value: JSON.stringify({
             method: body.verificationMethod,
@@ -212,6 +256,7 @@ export async function POST(req: NextRequest) {
             method: body.verificationMethod,
             value: body.verificationValue,
           }),
+          clinicId: clinicId,
         },
       });
     }
@@ -237,8 +282,19 @@ export async function DELETE(req: NextRequest) {
   if (!id) {
     return NextResponse.json({ error: 'id gerekli' }, { status: 400 });
   }
+  
+  // ClinicId'yi al
+  const clinicId = await getClinicIdFromRequest(req);
+  if (!clinicId) {
+    return NextResponse.json({ error: 'Klinik bilgisi bulunamadı' }, { status: 400 });
+  }
+  
   const offer = await prisma.offer.updateMany({
-    where: { id, isDeleted: false },
+    where: { 
+      id, 
+      clinicId: clinicId,
+      isDeleted: false 
+    },
     data: { isDeleted: true },
   });
   if (offer.count === 0) {

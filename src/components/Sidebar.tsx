@@ -42,37 +42,36 @@ const menuGroups: MenuGroup[] = [
   {
     title: 'Ana Menü',
     items: [
-      { href: '/dashboard', icon: FaChartBar, label: 'Dashboard' },
+      { href: '/site/dashboard', icon: FaChartBar, label: 'Dashboard' },
     ]
   },
   {
     title: 'Hasta Yönetimi',
     items: [
-      { href: '/patients/new', icon: FaUserPlus, label: 'Yeni Hasta Oluştur' },
-      { href: '/patients', icon: FaList, label: 'Tüm Hastalar' },
+      { href: '/site/patients/new', icon: FaUserPlus, label: 'Yeni Hasta Oluştur' },
+      { href: '/site/patients', icon: FaList, label: 'Tüm Hastalar' },
     ]
   },
   {
     title: 'Teklif Yönetimi',
     items: [
-      { href: '/offers/new', icon: FaPlus, label: 'Yeni Teklif Oluştur' },
-      { href: '/offers', icon: FaList, label: 'Tüm Teklifler' },
+      { href: '/site/offers/new', icon: FaPlus, label: 'Yeni Teklif Oluştur' },
+      { href: '/site/offers', icon: FaList, label: 'Tüm Teklifler' },
     ]
   },
   {
     title: 'Sistem',
     items: [
-      { href: '/reminders', icon: FaBell, label: 'Hatırlatmalar' },
-      { href: '/performance', icon: FaChartLine, label: 'Performans' },
-      { href: '/reports', icon: FaChartPie, label: 'Raporlama' },
+      { href: '/site/reminders', icon: FaBell, label: 'Hatırlatmalar' },
+      { href: '/site/performance', icon: FaChartLine, label: 'Performans' },
+      { href: '/site/reports', icon: FaChartPie, label: 'Raporlama' },
     ]
   },
   {
     title: 'Yönetim',
     items: [
-      { href: '/admin', icon: FaShieldAlt, label: 'Yönetici Paneli' },
-      { href: '/users', icon: FaUsers, label: 'Kullanıcı Yönetimi' },
-      { href: '/settings', icon: FaCog, label: 'Sistem Ayarları' },
+      { href: '/site/users', icon: FaUsers, label: 'Kullanıcı Yönetimi' },
+      { href: '/site/settings', icon: FaCog, label: 'Sistem Ayarları' },
     ]
   }
 ]
@@ -100,8 +99,8 @@ export default function Sidebar({ className = '' }: SidebarProps) {
   }
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === '/dashboard'
+    if (href === '/site/dashboard') {
+      return pathname === '/site/dashboard'
     }
     return pathname.startsWith(href)
   }

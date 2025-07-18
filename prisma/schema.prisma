@@ -11,26 +11,110 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+// ===== CLINIC MODELS =====
+
+model Clinic {
+  id          String   @id @default(cuid())
+  name        String
+  subdomain   String   @unique
+  domain      String?
+  isActive    Boolean  @default(true)
+  maxUsers    Int      @default(5)
+  maxPatients Int      @default(100)
+  maxOffers   Int      @default(500)
+  
+  // Abonelik bilgileri
+  subscriptionStartDate DateTime? // Abonelik başlangıç tarihi
+  subscriptionEndDate   DateTime? // Abonelik bitiş tarihi
+  subscriptionStatus    String    @default("TRIAL") // TRIAL, ACTIVE, EXPIRED, CANCELLED
+  packageId             String?   // ClinicPackage ile ilişki
+  package               ClinicPackage? @relation(fields: [packageId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // İlişkiler
+  users       ClinicUser[]
+  patients    Patient[]
+  offers      Offer[]
+  settings    ClinicSetting[]
+  notes       Note[]
+  offerStatuses OfferStatus[]
+
+  @@map("clinics")
+}
+
+model ClinicPackage {
+  id          String   @id @default(cuid())
+  name        String
+  features    String   // JSON string
+  price       Float
+  currency    String   @default("TRY")
+  duration    Int      // Gün cinsinden
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // İlişkiler
+  clinics     Clinic[]
+
+  @@map("clinic_packages")
+}
+
+model ClinicUser {
+  id          String   @id @default(cuid())
+  email       String
+  name        String
+  role        String   @default("USER") // ADMIN, SALES, DOCTOR, USER
+  password    String
+  isActive    Boolean  @default(true)
+  permissions String?  // JSON string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
+
+  // İlişkiler
+  offers      Offer[]
+  reminders   Reminder[]
+  notes       Note[]
+  appointments Appointment[]
+  doctorSchedules DoctorSchedule[]
+  doctorTimeOffs DoctorTimeOff[]
+
+  @@map("clinic_users")
+}
+
+model ClinicSetting {
+  id        String   @id @default(cuid())
+  key       String
+  value     String
+  clinicId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clinic    Clinic   @relation(fields: [clinicId], references: [id])
+
+  @@unique([clinicId, key])
+  @@map("clinic_settings")
+}
+
+// ===== SUPER ADMIN MODELS =====
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
-  role      String   @default("SALES") // ADMIN, SALES, DOCTOR
+  role      String   @default("SUPER_ADMIN") // SUPER_ADMIN, ADMIN
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  offers     Offer[]
-  reminders  Reminder[]
-  notes      Note[]
-  
-  // Doktor takvimi ilişkileri
-  appointments     Appointment[]
-  doctorSchedules  DoctorSchedule[]
-  doctorTimeOffs   DoctorTimeOff[]
-
   @@map("users")
 }
+
+// ===== CLINIC DATA MODELS =====
 
 model Patient {
   id            String   @id @default(cuid())
@@ -64,10 +148,11 @@ model Patient {
   updatedAt     DateTime @updatedAt
   isDeleted     Boolean  @default(false)
 
+  clinicId      String
+  clinic        Clinic   @relation(fields: [clinicId], references: [id])
+
   offers        Offer[]
   reminders     Reminder[]
-  
-  // Doktor takvimi ilişkileri
   appointments  Appointment[]
 
   @@map("patients")
@@ -75,7 +160,7 @@ model Patient {
 
 model OfferStatus {
   id          String   @id @default(cuid())
-  name        String   @unique
+  name        String
   displayName String
   color       String   @default("#6B7280") // Hex color code
   order       Int      @default(0) // Pipeline sırası
@@ -84,8 +169,12 @@ model OfferStatus {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
+
   offers      Offer[]
 
+  @@unique([name, clinicId]) // Aynı isim farklı kliniklerde olabilir
   @@map("offer_statuses")
 }
 
@@ -107,17 +196,18 @@ model Offer {
   estimatedDays  Int @default(0) // Estimated treatment duration (days)
   estimatedHours Int @default(0) // Estimated treatment duration (hours)
 
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
+
   patientId String
   patient   Patient @relation(fields: [patientId], references: [id])
 
   userId String
-  user   User @relation(fields: [userId], references: [id])
+  user   ClinicUser @relation(fields: [userId], references: [id])
 
   treatments Treatment[]
   notes      Note[]
   reminders  Reminder[]
-  
-  // Doktor takvimi ilişkileri
   appointments Appointment[]
 
   @@map("offers")
@@ -155,7 +245,10 @@ model Note {
   offer   Offer @relation(fields: [offerId], references: [id])
 
   userId String
-  user   User @relation(fields: [userId], references: [id])
+  user   ClinicUser @relation(fields: [userId], references: [id])
+
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
 
   @@map("notes")
 }
@@ -174,7 +267,7 @@ model Reminder {
   updatedAt   DateTime @updatedAt
 
   userId    String
-  user      User   @relation(fields: [userId], references: [id])
+  user      ClinicUser   @relation(fields: [userId], references: [id])
 
   offerId   String?
   offer     Offer?  @relation(fields: [offerId], references: [id])
@@ -273,7 +366,7 @@ model Appointment {
   patient           Patient  @relation(fields: [patientId], references: [id])
   
   doctorId          String
-  doctor            User     @relation(fields: [doctorId], references: [id])
+  doctor            ClinicUser     @relation(fields: [doctorId], references: [id])
   
   startTime         DateTime
   endTime           DateTime
@@ -297,7 +390,7 @@ model Appointment {
 model DoctorSchedule {
   id              String   @id @default(cuid())
   doctorId        String
-  doctor          User     @relation(fields: [doctorId], references: [id])
+  doctor          ClinicUser @relation(fields: [doctorId], references: [id])
   
   dayOfWeek       Int      // 0=Pazar, 1=Pazartesi, ..., 6=Cumartesi
   startTime       String   // "09:00" formatında
@@ -315,7 +408,7 @@ model DoctorSchedule {
 model DoctorTimeOff {
   id              String   @id @default(cuid())
   doctorId        String
-  doctor          User     @relation(fields: [doctorId], references: [id])
+  doctor          ClinicUser @relation(fields: [doctorId], references: [id])
   
   startDateTime   DateTime
   endDateTime     DateTime
