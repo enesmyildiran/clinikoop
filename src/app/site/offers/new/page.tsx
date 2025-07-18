@@ -630,7 +630,7 @@ export default function OfferCreatePage() {
             <div><b>Tarih:</b> {successData.date}</div>
           </div>
           <div className="flex flex-col gap-3 mt-6">
-            <Button onClick={() => router.push(`/site/patients/${selectedPatientId}`)} className="w-full">Hasta Profili'ne Git</Button>
+            <Button onClick={() => router.push(`/site/patients/${selectedPatientId}`)} className="w-full">Hasta Profili&apos;ne Git</Button>
             <Button onClick={() => router.push('/site/offers')} variant="outline" className="w-full">Teklifler Listesine Dön</Button>
             <Button onClick={() => router.push('/site/offers/new')} variant="ghost" className="w-full">Yeni Teklif Oluştur</Button>
           </div>
