@@ -1,0 +1,329 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("SALES") // ADMIN, SALES, DOCTOR
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offers     Offer[]
+  reminders  Reminder[]
+  notes      Note[]
+  
+  // Doktor takvimi ilişkileri
+  appointments     Appointment[]
+  doctorSchedules  DoctorSchedule[]
+  doctorTimeOffs   DoctorTimeOff[]
+
+  @@map("users")
+}
+
+model Patient {
+  id            String   @id @default(cuid())
+  name          String
+  firstName     String?
+  lastName      String?
+  gender        String?
+  city          String?
+  emergencyContact String?
+  emergencyPhone String?
+  insurance     String?
+  insuranceNumber String?
+  isActive      Boolean  @default(true)
+  email         String?
+  phone         String
+  birthDate     DateTime?
+  address       String?
+  notes         String?
+  instagram     String?
+  facebook      String?
+  whatsapp      String?
+  medicalHistory String?
+  allergies     String?
+  salesRepId    String?  // Satış temsilcisi ID'si
+  referralSourceId String? // Referans kaynağı ID'si
+  referralSource   ReferralSource? @relation(fields: [referralSourceId], references: [id])
+  country       String?  // İkamet edilen ülke kodu (örn: 'DE', 'TR')
+  phoneCountry  String?  // Telefon ülke kodu (örn: 'TR', 'DE')
+  nationality   String?  // Vatandaşlık ülke kodu (örn: 'TR', 'DE')
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isDeleted     Boolean  @default(false)
+
+  offers        Offer[]
+  reminders     Reminder[]
+  
+  // Doktor takvimi ilişkileri
+  appointments  Appointment[]
+
+  @@map("patients")
+}
+
+model OfferStatus {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  displayName String
+  color       String   @default("#6B7280") // Hex color code
+  order       Int      @default(0) // Pipeline sırası
+  isDefault   Boolean  @default(false) // Varsayılan durum
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  offers      Offer[]
+
+  @@map("offer_statuses")
+}
+
+model Offer {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  totalPrice  Float
+  currency    String   @default("TRY")
+  statusId    String   // OfferStatus ile ilişki
+  status      OfferStatus @relation(fields: [statusId], references: [id])
+  validUntil  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isDeleted   Boolean  @default(false)
+
+  // Tedavi süresi
+  estimatedDays  Int @default(0) // Estimated treatment duration (days)
+  estimatedHours Int @default(0) // Estimated treatment duration (hours)
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
+  treatments Treatment[]
+  notes      Note[]
+  reminders  Reminder[]
+  
+  // Doktor takvimi ilişkileri
+  appointments Appointment[]
+
+  @@map("offers")
+}
+
+model Treatment {
+  id          String   @id @default(cuid())
+  name        String
+  key         String?
+  category    String?
+  currency    String? @default("TRY")
+  description String?
+  price       Float
+  quantity    Int      @default(1)
+  selectedTeeth String? // JSON array olarak diş numaraları
+  estimatedDays  Int @default(0) // Tahmini gün
+  estimatedHours Int @default(0) // Tahmini saat
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  offerId String
+  offer   Offer @relation(fields: [offerId], references: [id])
+
+  @@map("treatments")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  content   String
+  isPrivate Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  offerId String
+  offer   Offer @relation(fields: [offerId], references: [id])
+
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
+  @@map("notes")
+}
+
+model Reminder {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime
+  status      String   @default("PENDING") // PENDING, DONE, POSTPONED, CLOSED_WITH_REASON
+  reason      String?  // Kapatma sebebi
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  isPrivate   Boolean  @default(false)
+  isPinned    Boolean  @default(false) // Sabitleme durumu
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId    String
+  user      User   @relation(fields: [userId], references: [id])
+
+  offerId   String?
+  offer     Offer?  @relation(fields: [offerId], references: [id])
+
+  patientId String?
+  patient   Patient? @relation(fields: [patientId], references: [id])
+
+  @@map("reminders")
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model PdfTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String   @default("standard")
+  version     String   @default("1.0.0")
+  author      String?
+  content     String   // JSON string olarak saklanacak
+  isDefault   Boolean  @default(false)
+  isFixed     Boolean  @default(false)
+  isPublic    Boolean  @default(true)
+  tags        String   @default("[]") // JSON array string
+  metadata    String   @default("{}") // JSON object string
+  settings    String   @default("{}") // JSON object string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // İlişkiler
+  versions    TemplateVersion[]
+  usages      TemplateUsage[]
+
+  @@map("pdf_templates")
+}
+
+model TemplateVersion {
+  id          String   @id @default(cuid())
+  templateId  String
+  version     String
+  changes     String   @default("[]") // JSON array string
+  createdAt   DateTime @default(now())
+  createdBy   String
+  isActive    Boolean  @default(false)
+  
+  // İlişkiler
+  template    PdfTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@map("template_versions")
+}
+
+model TemplateUsage {
+  id           String   @id @default(cuid())
+  templateId   String
+  userId       String?
+  offerId      String?
+  usedAt       DateTime @default(now())
+  success      Boolean  @default(true)
+  errorMessage String?
+  
+  // İlişkiler
+  template     PdfTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@map("template_usages")
+}
+
+model ReferralSource {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  displayName String
+  description String?
+  color       String   @default("#6B7280") // Hex color code
+  order       Int      @default(0) // Sıralama
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  patients    Patient[]
+
+  @@map("referral_sources")
+}
+
+// ===== DOKTOR TAKVİMİ MODELLERİ =====
+
+model Appointment {
+  id                String   @id @default(cuid())
+  patientId         String
+  patient           Patient  @relation(fields: [patientId], references: [id])
+  
+  doctorId          String
+  doctor            User     @relation(fields: [doctorId], references: [id])
+  
+  startTime         DateTime
+  endTime           DateTime
+  durationMinutes   Int      @default(30)
+  
+  appointmentType   String   @default("MUAYENE") // MUAYENE, DOLGU, KANAL_TEDAVISI, KONTROL, vb.
+  status            String   @default("BEKLEMEDE") // BEKLEMEDE, ONAYLANDI, TAMAMLANDI, IPTAL_EDILDI, GELMEDI
+  
+  notes             String?
+  isBlockage        Boolean  @default(false) // Doktorun müsait olmadığı blokaj mı?
+  
+  relatedOfferId    String?  // Onaylanmış tekliften gelen randevu
+  relatedOffer      Offer?   @relation(fields: [relatedOfferId], references: [id])
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("appointments")
+}
+
+model DoctorSchedule {
+  id              String   @id @default(cuid())
+  doctorId        String
+  doctor          User     @relation(fields: [doctorId], references: [id])
+  
+  dayOfWeek       Int      // 0=Pazar, 1=Pazartesi, ..., 6=Cumartesi
+  startTime       String   // "09:00" formatında
+  endTime         String   // "17:00" formatında
+  
+  breakStartTime  String?  // "12:00" formatında
+  breakEndTime    String?  // "13:00" formatında
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("doctor_schedules")
+}
+
+model DoctorTimeOff {
+  id              String   @id @default(cuid())
+  doctorId        String
+  doctor          User     @relation(fields: [doctorId], references: [id])
+  
+  startDateTime   DateTime
+  endDateTime     DateTime
+  reason          String   // "TATIL", "KONGRE", "AMELIYAT", "OZEL_RANDEVU", vb.
+  isRecurring     Boolean  @default(false) // Tekrar eden blokaj mı?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("doctor_time_offs")
+} 

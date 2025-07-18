@@ -1,0 +1,46 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus kendisini izle
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter - sistem metrikleri
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Clinikoop Next.js uygulaması
+  - job_name: 'clinikoop-nextjs'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/api/metrics'
+    scrape_interval: 30s
+
+  # Clinikoop API endpoints
+  - job_name: 'clinikoop-api'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/api/metrics/api'
+    scrape_interval: 30s
+
+  # Database metrikleri (Prisma)
+  - job_name: 'clinikoop-database'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/api/metrics/database'
+    scrape_interval: 30s
+
+  # Business metrikleri
+  - job_name: 'clinikoop-business'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/api/metrics/business'
+    scrape_interval: 60s 

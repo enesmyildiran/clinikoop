@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getClinicIdFromRequest } from '@/lib/clinic-routing';
 import { z } from 'zod';
 
 const reminderSchema = z.object({
@@ -16,6 +17,9 @@ const reminderSchema = z.object({
 // GET /api/reminders - Hatırlatmaları listele
 export async function GET(request: NextRequest) {
   try {
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(request);
+    
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const patientId = searchParams.get('patientId');
@@ -23,6 +27,13 @@ export async function GET(request: NextRequest) {
     const today = searchParams.get('today') === 'true';
 
     let where: any = {};
+
+    // ClinicId filtresi
+    if (clinicId) {
+      where.user = {
+        clinicId: clinicId
+      };
+    }
 
     // Status filtresi
     if (status) {
@@ -94,6 +105,15 @@ export async function GET(request: NextRequest) {
 // POST /api/reminders - Yeni hatırlatma oluştur
 export async function POST(request: NextRequest) {
   try {
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(request);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
+    
     const body = await request.json();
     const { title, description, dueDate, patientId, offerId, priority, isPrivate } = body;
 
@@ -106,10 +126,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Mock user ID - gerçek uygulamada auth'dan gelecek
-    // Eğer veritabanında bir kullanıcı varsa onu kullan
     let userId = 'mock-user-id';
-    const user = await prisma.user.findFirst();
-    if (user) userId = user.id;
+    let user = await prisma.clinicUser.findFirst({
+      where: { clinicId: clinicId }
+    });
+    if (!user) {
+      // Eğer kullanıcı yoksa otomatik admin oluştur
+      user = await prisma.clinicUser.create({
+        data: {
+          email: 'admin@clinikoop.com',
+          name: 'Admin User',
+          password: '$2a$10$hashedpassword', // bcrypt ile hashlenmiş dummy şifre
+          role: 'ADMIN',
+          clinicId: clinicId,
+          isActive: true
+        }
+      });
+    }
+    userId = user.id;
 
     // Tarih validasyonu
     let parsedDueDate: Date;

@@ -186,16 +186,28 @@ export default function PDFTestPage() {
       console.log('PDFGenerator oluşturuldu')
       
       const pdfBlob = await pdfGenerator.generatePDF(testOfferData)
-      console.log('PDF blob oluşturuldu:', pdfBlob)
-      console.log('Blob boyutu:', pdfBlob.size)
-      console.log('Blob tipi:', pdfBlob.type)
       
-      if (!pdfBlob || pdfBlob.size === 0) {
-        throw new Error('PDF oluşturulamadı - boş blob')
+      // PDF metriklerini kaydet
+      try {
+        await fetch('/api/metrics/business', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'pdf_generated' })
+        })
+      } catch (error) {
+        console.log('Metrik kaydedilemedi:', error)
+      }
+      console.log('PDF oluşturuldu:', pdfBlob)
+      
+      if (!pdfBlob) {
+        throw new Error('PDF oluşturulamadı')
       }
       
+      // jsPDF'i blob'a çevir
+      const pdfBlobData = pdfBlob.output('blob')
+      
       // PDF'i indir
-      const url = URL.createObjectURL(pdfBlob)
+      const url = URL.createObjectURL(pdfBlobData)
       const link = document.createElement('a')
       link.href = url
       link.download = 'test_teklif.pdf'

@@ -170,7 +170,7 @@ export default function Header({ className = '' }: HeaderProps) {
                       <h3 className="font-semibold text-gray-900">Hatırlatmalar</h3>
                       <p className="text-xs text-gray-500">{allReminders.length} aktif hatırlatma</p>
                     </div>
-                    <Link href="/reminders" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                    <Link href="/site/reminders" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                       Tümünü Gör
                     </Link>
                   </div>
@@ -286,7 +286,7 @@ export default function Header({ className = '' }: HeaderProps) {
                     <FaUserCircle className="w-4 h-4" />
                     Profil Bilgileri
                   </button>
-                  <Link href="/settings" className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link href="/site/settings" className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     <FaCog className="w-4 h-4" />
                     Ayarlar
                   </Link>
