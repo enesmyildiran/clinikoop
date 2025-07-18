@@ -374,7 +374,7 @@ export default function StatusesPage() {
             <div className="text-center py-8">
               <FaTags className="text-4xl text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 mb-4">
-                Yeni bir durum eklemek için "Yeni Durum" butonuna tıklayın
+                Yeni bir durum eklemek için &quot;Yeni Durum&quot; butonuna tıklayın
               </p>
               <button
                 onClick={() => setIsCreating(true)}

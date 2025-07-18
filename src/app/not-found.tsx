@@ -142,7 +142,7 @@ export default function NotFound() {
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-200 font-medium"
             >
               <FaRocket className="text-sm" />
-              Dashboard'a Git
+              Dashboard&apos;a Git
             </Link>
           </div>
 
