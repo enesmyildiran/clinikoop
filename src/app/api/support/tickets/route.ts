@@ -117,10 +117,12 @@ export async function POST(request: Request) {
     const ticket = await prisma.supportTicket.create({
       data: {
         ticketNumber,
+        title: subject, // title alanı için subject kullanıyoruz
         subject,
         description,
         isUrgent,
         clinicId,
+        authorId: createdById, // authorId alanı için createdById kullanıyoruz
         createdById,
         categoryId,
         priorityId,

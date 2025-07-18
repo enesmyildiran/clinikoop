@@ -541,15 +541,15 @@ export class PDFGenerator {
     let currentY = y + 8;
     
     // Hasta bilgileri
-    pdf.text(this.replaceDynamicContent(`Ad Soyad: ${offerData.patient.firstName} ${offerData.patient.lastName}`), x, currentY);
+    pdf.text(this.replaceDynamicContent(`Ad Soyad: ${offerData.patient.firstName} ${offerData.patient.lastName}`, offerData), x, currentY);
     currentY += 6;
-    pdf.text(this.replaceDynamicContent(`Telefon: ${offerData.patient.phone}`), x, currentY);
+    pdf.text(this.replaceDynamicContent(`Telefon: ${offerData.patient.phone}`, offerData), x, currentY);
     currentY += 6;
-    pdf.text(this.replaceDynamicContent(`E-posta: ${offerData.patient.email}`), x, currentY);
+    pdf.text(this.replaceDynamicContent(`E-posta: ${offerData.patient.email}`, offerData), x, currentY);
     currentY += 6;
-    pdf.text(this.replaceDynamicContent(`Teklif Tarihi: ${offerData.offerDate}`), x, currentY);
+    pdf.text(this.replaceDynamicContent(`Teklif Tarihi: ${offerData.offerDate}`, offerData), x, currentY);
     currentY += 6;
-    pdf.text(this.replaceDynamicContent(`Geçerlilik: ${offerData.validUntil}`), x, currentY);
+    pdf.text(this.replaceDynamicContent(`Geçerlilik: ${offerData.validUntil}`, offerData), x, currentY);
   }
 
   private renderTreatmentInfoElement(
@@ -578,16 +578,16 @@ export class PDFGenerator {
     
     // Tedavi listesi
     offerData.treatments.forEach((treatment, index) => {
-      pdf.text(this.replaceDynamicContent(`${index + 1}. ${treatment.name}`), x, currentY);
+      pdf.text(this.replaceDynamicContent(`${index + 1}. ${treatment.name}`, offerData), x, currentY);
       currentY += 5;
       
       if (treatment.teeth && treatment.teeth.length > 0) {
-        pdf.text(this.replaceDynamicContent(`   Dişler: ${treatment.teeth.join(', ')}`), x, currentY);
+        pdf.text(this.replaceDynamicContent(`   Dişler: ${treatment.teeth.join(', ')}`, offerData), x, currentY);
         currentY += 5;
       }
       
       if (treatment.notes) {
-        pdf.text(this.replaceDynamicContent(`   Not: ${treatment.notes}`), x, currentY);
+        pdf.text(this.replaceDynamicContent(`   Not: ${treatment.notes}`, offerData), x, currentY);
         currentY += 5;
       }
     });
@@ -628,9 +628,9 @@ export class PDFGenerator {
     pdf.setFont('helvetica', 'normal');
     
     offerData.treatments.forEach((treatment, index) => {
-      pdf.text(this.replaceDynamicContent(treatment.name), x, currentY);
-      pdf.text(this.replaceDynamicContent(treatment.teeth.join(', ')), x + colWidth, currentY);
-      pdf.text(this.replaceDynamicContent(`${(Math.round(treatment.price * 100) / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${treatment.currency}`), x + colWidth * 2, currentY);
+      pdf.text(this.replaceDynamicContent(treatment.name, offerData), x, currentY);
+      pdf.text(this.replaceDynamicContent(treatment.teeth.join(', '), offerData), x + colWidth, currentY);
+      pdf.text(this.replaceDynamicContent(`${(Math.round(treatment.price * 100) / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${treatment.currency}`, offerData), x + colWidth * 2, currentY);
       currentY += 5;
     });
     
@@ -638,16 +638,16 @@ export class PDFGenerator {
     currentY += 3;
     pdf.setFont('helvetica', 'bold');
     pdf.text('Ara Toplam:', x + colWidth, currentY);
-    pdf.text(this.replaceDynamicContent(`${offerData.totalAmount.toLocaleString('tr-TR')} ${offerData.currency}`), x + colWidth * 2, currentY);
+    pdf.text(this.replaceDynamicContent(`${offerData.totalAmount.toLocaleString('tr-TR')} ${offerData.currency}`, offerData), x + colWidth * 2, currentY);
     currentY += 5;
     
     pdf.text(`KDV (${offerData.vatRate}%):`, x + colWidth, currentY);
-    pdf.text(this.replaceDynamicContent(`${offerData.vatAmount.toLocaleString('tr-TR')} ${offerData.currency}`), x + colWidth * 2, currentY);
+    pdf.text(this.replaceDynamicContent(`${offerData.vatAmount.toLocaleString('tr-TR')} ${offerData.currency}`, offerData), x + colWidth * 2, currentY);
     currentY += 5;
     
     pdf.setFontSize(contentFontSize + 2);
     pdf.text('Genel Toplam:', x + colWidth, currentY);
-    pdf.text(this.replaceDynamicContent(`${offerData.grandTotal.toLocaleString('tr-TR')} ${offerData.currency}`), x + colWidth * 2, currentY);
+    pdf.text(this.replaceDynamicContent(`${offerData.grandTotal.toLocaleString('tr-TR')} ${offerData.currency}`, offerData), x + colWidth * 2, currentY);
   }
 
   private replaceDynamicContent(content: string, offerData: OfferData, pdfSettings?: PDFSettings): string {
@@ -741,12 +741,12 @@ export class PDFGenerator {
     pdf.setFont('helvetica', 'normal'); // Türkçe karakter desteği için
     pdf.setFontSize(24);
     pdf.setTextColor(59, 130, 246); // Blue color
-    const headerText = this.replaceDynamicContent(pdfSettings?.clinicName || this.template.headerText, undefined, pdfSettings);
+    const headerText = this.replaceDynamicContent(pdfSettings?.clinicName || this.template.headerText, {} as OfferData, pdfSettings);
     pdf.text(headerText, pageWidth / 2, yPosition, { align: 'center' });
     if (pdfSettings?.clinicSlogan) {
       pdf.setFontSize(12);
       pdf.setTextColor(107, 114, 128);
-      pdf.text(this.replaceDynamicContent(pdfSettings.clinicSlogan, undefined, pdfSettings), pageWidth / 2, yPosition + 8, { align: 'center' });
+      pdf.text(this.replaceDynamicContent(pdfSettings.clinicSlogan, {} as OfferData, pdfSettings), pageWidth / 2, yPosition + 8, { align: 'center' });
       return yPosition + 20;
     }
     return yPosition + 15;
@@ -782,15 +782,15 @@ export class PDFGenerator {
     pdf.text('Hasta Bilgileri', margin, yPosition);
     yPosition += 10;
     pdf.setFontSize(12);
-    pdf.text(this.replaceDynamicContent(`Ad Soyad: ${offerData.patient.firstName} ${offerData.patient.lastName}`), margin, yPosition);
+    pdf.text(this.replaceDynamicContent(`Ad Soyad: ${offerData.patient.firstName} ${offerData.patient.lastName}`, offerData), margin, yPosition);
     yPosition += 7;
-    pdf.text(this.replaceDynamicContent(`Telefon: ${offerData.patient.phone}`), margin, yPosition);
+    pdf.text(this.replaceDynamicContent(`Telefon: ${offerData.patient.phone}`, offerData), margin, yPosition);
     yPosition += 7;
-    pdf.text(this.replaceDynamicContent(`E-posta: ${offerData.patient.email}`), margin, yPosition);
+    pdf.text(this.replaceDynamicContent(`E-posta: ${offerData.patient.email}`, offerData), margin, yPosition);
     yPosition += 7;
-    pdf.text(this.replaceDynamicContent(`Teklif Tarihi: ${offerData.offerDate}`), margin, yPosition);
+    pdf.text(this.replaceDynamicContent(`Teklif Tarihi: ${offerData.offerDate}`, offerData), margin, yPosition);
     yPosition += 7;
-    pdf.text(this.replaceDynamicContent(`Geçerlilik: ${offerData.validUntil}`), margin, yPosition);
+    pdf.text(this.replaceDynamicContent(`Geçerlilik: ${offerData.validUntil}`, offerData), margin, yPosition);
     return yPosition + 15;
   }
 
@@ -831,13 +831,13 @@ export class PDFGenerator {
       pdf.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
       let x = margin;
       pdf.rect(x, yPosition - 5, colWidths[0], 8, 'F');
-      pdf.text(this.replaceDynamicContent(treatment.name), x + 2, yPosition);
+      pdf.text(this.replaceDynamicContent(treatment.name, offerData), x + 2, yPosition);
       x += colWidths[0];
       pdf.rect(x, yPosition - 5, colWidths[1], 8, 'F');
-      pdf.text(this.replaceDynamicContent(treatment.teeth.join(', ')), x + 2, yPosition);
+      pdf.text(this.replaceDynamicContent(treatment.teeth.join(', '), offerData), x + 2, yPosition);
       x += colWidths[1];
       pdf.rect(x, yPosition - 5, colWidths[2], 8, 'F');
-      pdf.text(this.replaceDynamicContent(`${treatment.price.toLocaleString('tr-TR')} ${treatment.currency}`), x + 2, yPosition);
+      pdf.text(this.replaceDynamicContent(`${(Math.round(treatment.price * 100) / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${treatment.currency}`, offerData), x + 2, yPosition);
       yPosition += 8;
     });
     return yPosition + 10;
@@ -849,27 +849,27 @@ export class PDFGenerator {
     pdf.setFontSize(12);
     pdf.setTextColor(0, 0, 0);
     pdf.text('Ara Toplam:', rightAlign - 50, yPosition);
-    pdf.text(this.replaceDynamicContent(`${offerData.totalAmount.toLocaleString('tr-TR')} ${offerData.currency}`), rightAlign, yPosition, { align: 'right' });
+    pdf.text(this.replaceDynamicContent(`${offerData.totalAmount.toLocaleString('tr-TR')} ${offerData.currency}`, offerData), rightAlign, yPosition, { align: 'right' });
     yPosition += 7;
     if ((pdfSettings?.showVAT !== false) && this.template.showVAT) {
       pdf.text(`KDV (${offerData.vatRate}%):`, rightAlign - 50, yPosition);
-      pdf.text(this.replaceDynamicContent(`${offerData.vatAmount.toLocaleString('tr-TR')} ${offerData.currency}`), rightAlign, yPosition, { align: 'right' });
+      pdf.text(this.replaceDynamicContent(`${offerData.vatAmount.toLocaleString('tr-TR')} ${offerData.currency}`, offerData), rightAlign, yPosition, { align: 'right' });
       yPosition += 7;
     }
     pdf.setFontSize(14);
     pdf.text('Genel Toplam:', rightAlign - 50, yPosition);
-    pdf.text(this.replaceDynamicContent(`${offerData.grandTotal.toLocaleString('tr-TR')} ${offerData.currency}`), rightAlign, yPosition, { align: 'right' });
+    pdf.text(this.replaceDynamicContent(`${offerData.grandTotal.toLocaleString('tr-TR')} ${offerData.currency}`, offerData), rightAlign, yPosition, { align: 'right' });
     return yPosition + 15;
   }
 
-  private addNotes(pdf: jsPDF, notes: string, yPosition: number, pageWidth: number, margin: number): number {
+  private addNotes(pdf: jsPDF, notes: string, yPosition: number, pageWidth: number, margin: number, offerData: OfferData): number {
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(12);
     pdf.setTextColor(0, 0, 0);
     pdf.text('Notlar:', margin, yPosition);
     yPosition += 7;
     pdf.setFont('helvetica', 'normal');
-    const lines = this.splitTextToSize(this.replaceDynamicContent(notes), pageWidth - 2 * margin, pdf);
+    const lines = this.splitTextToSize(this.replaceDynamicContent(notes, offerData), pageWidth - 2 * margin, pdf);
     lines.forEach(line => {
       pdf.text(line, margin, yPosition);
       yPosition += 5;

@@ -42,6 +42,10 @@ model Clinic {
   offerStatuses OfferStatus[]
   activityLogs ActivityLog[]
   analyticsEvents AnalyticsEvent[]
+  appointments Appointment[]
+  reminders   Reminder[]
+  supportTickets SupportTicket[]
+  systemLogs    SystemLog[]
 
   @@map("clinics")
 }
@@ -86,6 +90,13 @@ model ClinicUser {
   doctorTimeOffs DoctorTimeOff[]
   activityLogs ActivityLog[]
   analyticsEvents AnalyticsEvent[]
+  createdPatients Patient[] @relation("PatientCreatedBy")
+  createdOffers Offer[] @relation("OfferCreatedBy")
+  supportTickets SupportTicket[]
+  supportMessages SupportMessage[]
+  createdTickets SupportTicket[] @relation("TicketCreatedBy")
+  assignedTickets SupportTicket[] @relation("TicketAssignedTo")
+  systemLogs      SystemLog[]
 
   @@map("clinic_users")
 }
@@ -158,6 +169,10 @@ model Patient {
   offers        Offer[]
   reminders     Reminder[]
   appointments  Appointment[]
+  
+  // Oluşturan kullanıcı
+  createdById String?
+  createdBy   ClinicUser? @relation("PatientCreatedBy", fields: [createdById], references: [id])
 
   @@map("patients")
 }
@@ -208,6 +223,10 @@ model Offer {
 
   userId String
   user   ClinicUser @relation(fields: [userId], references: [id])
+
+  // Oluşturan kullanıcı
+  createdById String?
+  createdBy   ClinicUser? @relation("OfferCreatedBy", fields: [createdById], references: [id])
 
   treatments Treatment[]
   notes      Note[]
@@ -264,7 +283,8 @@ model Reminder {
   dueDate     DateTime
   status      String   @default("PENDING") // PENDING, DONE, POSTPONED, CLOSED_WITH_REASON
   reason      String?  // Kapatma sebebi
-  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  priorityId  String?
+  priority    SupportPriority? @relation(fields: [priorityId], references: [id])
   isPrivate   Boolean  @default(false)
   isPinned    Boolean  @default(false) // Sabitleme durumu
   createdAt   DateTime @default(now())
@@ -272,6 +292,9 @@ model Reminder {
 
   userId    String
   user      ClinicUser   @relation(fields: [userId], references: [id])
+
+  clinicId  String
+  clinic    Clinic       @relation(fields: [clinicId], references: [id])
 
   offerId   String?
   offer     Offer?  @relation(fields: [offerId], references: [id])
@@ -372,6 +395,9 @@ model Appointment {
   doctorId          String
   doctor            ClinicUser     @relation(fields: [doctorId], references: [id])
   
+  clinicId          String
+  clinic            Clinic         @relation(fields: [clinicId], references: [id])
+  
   startTime         DateTime
   endTime           DateTime
   durationMinutes   Int      @default(30)
@@ -434,6 +460,8 @@ model ActivityLog {
   entityType  String?  // Örn: "OFFER", "PATIENT", "USER"
   entityId    String?  // İlgili entity'nin ID'si
   metadata    String?  // JSON string olarak ek veriler
+  ipAddress   String?  // IP adresi
+  userAgent   String?  // User agent bilgisi
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -451,7 +479,10 @@ model ActivityLog {
 model AnalyticsEvent {
   id          String   @id @default(cuid())
   eventType   String   // Örn: "PAGE_VIEW", "BUTTON_CLICK", "FORM_SUBMIT"
+  eventName   String?  // Event adı
   eventData   String?  // JSON string olarak event verileri
+  properties  String?  // JSON string olarak özellikler
+  sessionId   String?  // Session ID
   timestamp   DateTime @default(now())
   
   // İlişkiler
@@ -462,4 +493,155 @@ model AnalyticsEvent {
   clinic      Clinic? @relation(fields: [clinicId], references: [id])
 
   @@map("analytics_events")
+}
+
+// ===== SUPPORT SYSTEM MODELS =====
+
+model SupportCategory {
+  id          String   @id @default(cuid())
+  name        String
+  displayName String
+  description String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // İlişkiler
+  tickets     SupportTicket[]
+
+  @@map("support_categories")
+}
+
+model SupportTicket {
+  id          String   @id @default(cuid())
+  ticketNumber String  @unique // TKT-2024-001 formatında
+  title       String
+  subject     String?  // Konu başlığı
+  description String
+  isUrgent    Boolean  @default(false) // Acil durum mu?
+  statusId    String?
+  status      SupportStatus? @relation(fields: [statusId], references: [id])
+  priorityId  String?
+  priority    SupportPriority? @relation(fields: [priorityId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // İlişkiler
+  categoryId  String
+  category    SupportCategory @relation(fields: [categoryId], references: [id])
+  
+  authorId    String
+  author      ClinicUser @relation(fields: [authorId], references: [id])
+  
+  // Oluşturan kullanıcı
+  createdById String?
+  createdBy   ClinicUser? @relation("TicketCreatedBy", fields: [createdById], references: [id])
+  
+  // Atanan kullanıcı
+  assignedToId String?
+  assignedTo   ClinicUser? @relation("TicketAssignedTo", fields: [assignedToId], references: [id])
+  
+  clinicId    String
+  clinic      Clinic @relation(fields: [clinicId], references: [id])
+
+  messages    SupportMessage[]
+  attachments SupportAttachment[]
+
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id          String   @id @default(cuid())
+  content     String
+  authorName  String?  // Yazar adı (admin olmayan kullanıcılar için)
+  authorType  String   @default("USER") // USER, ADMIN
+  isFromAdmin Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // İlişkiler
+  ticketId    String
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id])
+  
+  authorId    String?
+  author      ClinicUser? @relation(fields: [authorId], references: [id])
+
+  attachments SupportAttachment[]
+
+  @@map("support_messages")
+}
+
+model SupportPriority {
+  id          String   @id @default(cuid())
+  name        String
+  displayName String
+  level       Int      @default(0) // Sıralama için
+  color       String   @default("#6B7280") // Hex color code
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // İlişkiler
+  tickets     SupportTicket[]
+  reminders   Reminder[]
+
+  @@map("support_priorities")
+}
+
+model SupportStatus {
+  id          String   @id @default(cuid())
+  name        String
+  displayName String
+  color       String   @default("#6B7280") // Hex color code
+  order       Int      @default(0) // Sıralama için
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // İlişkiler
+  tickets     SupportTicket[]
+
+  @@map("support_statuses")
+}
+
+model SupportAttachment {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int      // Byte cinsinden
+  path        String   // Dosya yolu
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // İlişkiler
+  ticketId    String
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id])
+  
+  messageId   String?
+  message     SupportMessage? @relation(fields: [messageId], references: [id])
+
+  @@map("support_attachments")
+}
+
+// ===== SYSTEM LOGGING MODELS =====
+
+model SystemLog {
+  id          String   @id @default(cuid())
+  level       String   // INFO, WARN, ERROR, DEBUG
+  category    String   // SYSTEM, SECURITY, PERFORMANCE, etc.
+  message     String
+  details     String?  // JSON string olarak detaylar
+  stackTrace  String?  // Stack trace bilgisi
+  timestamp   DateTime @default(now())
+  
+  // İlişkiler
+  clinicId    String?
+  clinic      Clinic? @relation(fields: [clinicId], references: [id])
+  
+  userId      String?
+  user        ClinicUser? @relation(fields: [userId], references: [id])
+
+  @@map("system_logs")
 } 

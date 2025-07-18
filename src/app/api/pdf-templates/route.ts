@@ -109,12 +109,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('=== API HATASI ===')
     console.error('PDF şablonu oluşturulurken hata:', error)
-    console.error('Error name:', error.name)
-    console.error('Error message:', error.message)
-    console.error('Error stack:', error.stack)
+    
+    const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
     
     return NextResponse.json(
-      { success: false, error: 'PDF şablonu oluşturulamadı: ' + error.message },
+      { success: false, error: 'PDF şablonu oluşturulamadı: ' + errorMessage },
       { status: 500 }
     );
   }
