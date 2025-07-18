@@ -667,7 +667,7 @@ export default function OfferPage({ params }: OfferPageProps) {
                               <FaNotesMedical className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                               <div>
                                 <span className="text-sm font-medium text-gray-700">Notlar:</span>
-                                <p className="text-sm text-gray-600 italic mt-1">"{treatment.notes}"</p>
+                                <p className="text-sm text-gray-600 italic mt-1">&quot;{treatment.notes}&quot;</p>
                               </div>
                             </div>
                           )}

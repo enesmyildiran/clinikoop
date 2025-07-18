@@ -64,7 +64,7 @@ export default function LanguageSettingsPage() {
             href="/site/dashboard"
             className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
           >
-            Dashboard'a Git
+            Dashboard&apos;a Git
           </Link>
         </div>
       </div>

@@ -241,7 +241,7 @@ export default function GeneralSettingsPage() {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
             <span className="text-sm text-yellow-800">
-              Kaydedilmemiş değişiklikleriniz var. Değişiklikleri kaydetmek için "Kaydet" butonuna tıklayın.
+              Kaydedilmemiş değişiklikleriniz var. Değişiklikleri kaydetmek için &quot;Kaydet&quot; butonuna tıklayın.
             </span>
           </div>
         </div>

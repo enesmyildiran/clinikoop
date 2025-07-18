@@ -456,7 +456,7 @@ export default function DashboardPage() {
                 <p className="text-sm">
                   <span className="font-medium">{offers.length - 5}</span> teklif daha var. 
                   <Link href="/site/offers" className="text-purple-600 hover:text-purple-700 ml-1 font-medium">
-                    Tümünü görüntüle →
+                    Tümünü görüntüle &rarr;
                   </Link>
                 </p>
               </div>
