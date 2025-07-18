@@ -406,7 +406,7 @@ export default function DashboardPage() {
               <div className="p-6 text-center text-gray-500">
                 <FaClipboardList className="text-4xl mx-auto mb-3 text-gray-300" />
                 <p>Henüz teklif oluşturulmamış</p>
-                <p className="text-sm text-gray-400 mt-1">İlk teklifinizi oluşturmak için "Yeni Teklif" butonunu kullanın</p>
+                <p className="text-sm text-gray-400 mt-1">İlk teklifinizi oluşturmak için &quot;Yeni Teklif&quot; butonunu kullanın</p>
               </div>
             )}
             {offers.slice(0, 5).map(offer => (
