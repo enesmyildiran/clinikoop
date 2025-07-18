@@ -12,7 +12,7 @@ interface Reminder {
   reason?: string
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
   isPrivate: boolean
-  isPinned?: boolean
+  isPinned: boolean
   createdAt: string
   updatedAt: string
   patient?: {

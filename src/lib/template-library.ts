@@ -4,7 +4,7 @@ import { PDFTemplate } from '@/types/pdf-template';
  * Hazır PDF Şablonları Kütüphanesi
  * Farklı kategorilerde profesyonel şablonlar
  */
-var TEMPLATE_LIBRARY = [
+var TEMPLATE_LIBRARY: PDFTemplate[] = [
   // STANDART TEKLİF ŞABLONU
   {
     id: 'standard-offer-1',
@@ -1006,7 +1006,7 @@ export class TemplateLibrary {
   /**
    * Kategoriye göre şablonları getir
    */
-  static getTemplatesByCategory(category: string): PDFTemplate[] {
+  static getTemplatesByCategory(category: 'standard' | 'premium' | 'minimal' | 'medical' | 'corporate' | 'custom'): PDFTemplate[] {
     return TEMPLATE_LIBRARY.filter(template => template.category === category);
   }
 
