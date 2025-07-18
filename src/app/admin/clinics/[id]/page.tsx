@@ -205,7 +205,7 @@ export default function ClinicDetailPage() {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Sistem Limitleri</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">{clinic._count.users || 0}</div>
+                <div className="text-2xl font-bold text-blue-600">{clinic.users.length}</div>
                 <div className="text-sm text-gray-500">Kullanıcı</div>
                 <div className="text-xs text-gray-400">Limit: {clinic.maxUsers}</div>
               </div>
