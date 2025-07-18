@@ -1,2 +1,4 @@
 clinikoop_ilk_yedek_20250716_225811/
-backups/ 
+backups/
+prisma/seed-logs.ts
+prisma/seed-pipeline.ts 
