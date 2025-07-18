@@ -310,9 +310,7 @@ export default function Header({ className = '' }: HeaderProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-6 w-96 max-w-sm">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Hatırlatmayı Ertele</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              "{selectedReminder?.title}" hatırlatmasını ne kadar ertelemek istiyorsunuz?
-            </p>
+            <p className="text-sm text-gray-600 mb-4">&quot;{selectedReminder?.title}&quot; hatırlatmasını ne kadar ertelemek istiyorsunuz?</p>
             
             <div className="space-y-3 mb-6">
               <label className="flex items-center">
@@ -421,9 +419,7 @@ export default function Header({ className = '' }: HeaderProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-6 w-96 max-w-sm">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Hatırlatmayı Kapat</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              "{selectedReminder?.title}" hatırlatmasını kapatmak için sebep girin:
-            </p>
+            <p className="text-sm text-gray-600 mb-4">&quot;{selectedReminder?.title}&quot; hatırlatmasını kapatmak için sebep girin:</p>
             
             <textarea
               value={reason}
