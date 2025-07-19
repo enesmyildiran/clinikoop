@@ -7,8 +7,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ===== CLINIC MODELS =====
@@ -241,7 +241,7 @@ model Treatment {
   name        String
   key         String?
   category    String?
-  currency    String? @default("TRY")
+  currency    String   @default("TRY")
   description String?
   price       Float
   quantity    Int      @default(1)
