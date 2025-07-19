@@ -13,24 +13,45 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = await prisma.user.findUnique({
+    // Önce User (süper admin) modelinde ara
+    let user = await prisma.user.findUnique({
       where: { email },
     })
-
-    if (!user) {
-      return NextResponse.json(
-        { message: 'Geçersiz e-posta veya şifre' },
-        { status: 401 }
-      )
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password)
-
-    if (!isPasswordValid) {
-      return NextResponse.json(
-        { message: 'Geçersiz e-posta veya şifre' },
-        { status: 401 }
-      )
+    
+    let isSuperAdmin = false
+    
+    if (user) {
+      const isPasswordValid = await bcrypt.compare(password, user.password)
+      if (!isPasswordValid) {
+        return NextResponse.json(
+          { message: 'Geçersiz e-posta veya şifre' },
+          { status: 401 }
+        )
+      }
+      isSuperAdmin = true
+    } else {
+      // Sonra ClinicUser (klinik kullanıcıları) modelinde ara
+      const clinicUser = await prisma.clinicUser.findFirst({
+        where: { email },
+      })
+      
+      if (!clinicUser) {
+        return NextResponse.json(
+          { message: 'Geçersiz e-posta veya şifre' },
+          { status: 401 }
+        )
+      }
+      
+      const isPasswordValid = await bcrypt.compare(password, clinicUser.password)
+      if (!isPasswordValid) {
+        return NextResponse.json(
+          { message: 'Geçersiz e-posta veya şifre' },
+          { status: 401 }
+        )
+      }
+      
+      user = clinicUser
+      isSuperAdmin = false
     }
 
     // In a real app, you would create a session here
@@ -39,6 +60,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: 'Giriş başarılı',
       user: userWithoutPassword,
+      isSuperAdmin,
     })
   } catch (error) {
     console.error('Login error:', error)
