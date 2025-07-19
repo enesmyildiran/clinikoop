@@ -91,6 +91,11 @@ export default function AdminLoginPage() {
             ← Klinik Girişine Dön
           </Link>
         </div>
+        
+        <div className="mt-4 text-center text-xs text-red-200">
+          <p>Test Kullanıcısı:</p>
+          <p>admin@clinikoop.com / admin123</p>
+        </div>
       </div>
     </div>
   )
