@@ -109,7 +109,7 @@ export default function SupportTicketDetailPage() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Link
-          href="/support"
+          href="/site/support"
           className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
         >
           <FaArrowLeft />

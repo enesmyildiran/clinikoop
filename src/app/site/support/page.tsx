@@ -42,7 +42,7 @@ export default function SupportPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Destek Taleplerim</h1>
         <Link
-          href="/support/new"
+          href="/site/support/new"
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
           + Yeni Talep
@@ -55,7 +55,7 @@ export default function SupportPage() {
       ) : tickets.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           Henüz destek talebiniz yok.<br />
-          <Link href="/support/new" className="text-blue-600 hover:underline">İlk talebinizi oluşturun</Link>
+          <Link href="/site/support/new" className="text-blue-600 hover:underline">İlk talebinizi oluşturun</Link>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm border overflow-x-auto">
@@ -87,7 +87,7 @@ export default function SupportPage() {
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-500">{new Date(ticket.createdAt).toLocaleString('tr-TR')}</td>
                   <td className="px-4 py-3 text-right">
-                    <Link href={`/support/${ticket.id}`} className="text-blue-600 hover:underline text-sm">Detay</Link>
+                    <Link href={`/site/support/${ticket.id}`} className="text-blue-600 hover:underline text-sm">Detay</Link>
                   </td>
                 </tr>
               ))}

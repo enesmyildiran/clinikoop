@@ -71,7 +71,7 @@ export default function NewSupportTicketPage() {
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Talep oluşturulamadı');
       setSuccess(true);
-      setTimeout(() => router.push('/support'), 1200);
+      setTimeout(() => router.push('/site/support'), 1200);
     } catch (err: any) {
       setError(err.message || 'Bilinmeyen hata');
     } finally {
@@ -152,7 +152,7 @@ export default function NewSupportTicketPage() {
         {error && <div className="text-red-500 text-sm">{error}</div>}
         {success && <div className="text-green-600 text-sm">Talebiniz başarıyla oluşturuldu!</div>}
         <div className="flex justify-between items-center">
-          <Link href="/support" className="text-gray-500 hover:underline">İptal</Link>
+          <Link href="/site/support" className="text-gray-500 hover:underline">İptal</Link>
           <button
             type="submit"
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"

@@ -37,7 +37,7 @@ export default function UnauthorizedPage() {
         <div className="mt-8 pt-6 border-t border-gray-200">
           <p className="text-sm text-gray-500">
             Sorun yaşıyorsanız{' '}
-            <Link href="/support" className="text-blue-600 hover:underline">
+            <Link href="/site/support" className="text-blue-600 hover:underline">
               destek ekibimizle
             </Link>{' '}
             iletişime geçin.
