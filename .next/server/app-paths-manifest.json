@@ -1,10 +1,10 @@
 {
+  "/api/metrics/business/route": "app/api/metrics/business/route.js",
   "/api/metrics/route": "app/api/metrics/route.js",
   "/api/metrics/database/route": "app/api/metrics/database/route.js",
-  "/api/metrics/business/route": "app/api/metrics/business/route.js",
   "/api/metrics/api/route": "app/api/metrics/api/route.js",
   "/site/dashboard/page": "app/site/dashboard/page.js",
-  "/admin/analytics/page": "app/admin/analytics/page.js",
   "/admin/logs/page": "app/admin/logs/page.js",
-  "/admin/clinics/page": "app/admin/clinics/page.js"
+  "/admin/clinics/page": "app/admin/clinics/page.js",
+  "/admin/analytics/page": "app/admin/analytics/page.js"
 }
