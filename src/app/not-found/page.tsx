@@ -25,13 +25,13 @@ export default function NotFoundPage() {
             Ana Sayfa
           </Link>
           
-          <button 
-            onClick={() => window.history.back()}
+          <Link 
+            href="/"
             className="w-full border border-gray-300 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
           >
             <FaArrowLeft className="w-4 h-4" />
-            Geri Dön
-          </button>
+            Ana Sayfa
+          </Link>
         </div>
         
         <div className="mt-8 pt-6 border-t border-gray-200">
