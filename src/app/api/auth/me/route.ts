@@ -38,7 +38,21 @@ export async function GET(request: NextRequest) {
     }
     
     // Production modunda veya localhost değilse gerçek auth kontrolü
-    // Bu kısım canlıya alındığında NextAuth session kontrolü yapacak
+    // Geçici olarak admin kullanıcısını döndür
+    const adminUser = await prisma.user.findFirst({
+      where: { email: 'admin@clinikoop.com' }
+    })
+    
+    if (adminUser) {
+      const { password: _, ...userWithoutPassword } = adminUser
+      return NextResponse.json({
+        user: userWithoutPassword,
+        clinic: null,
+        isSuperAdmin: true,
+        isDevelopment: false
+      })
+    }
+    
     return NextResponse.json(
       { message: 'Kullanıcı bulunamadı' },
       { status: 404 }
