@@ -24,7 +24,13 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       })
       if (response.ok) {
-        router.push('/dashboard')
+        const data = await response.json()
+        // Kullanıcı tipine göre yönlendirme
+        if (data.isSuperAdmin) {
+          router.push('/admin/dashboard')
+        } else {
+          router.push('/site/dashboard')
+        }
       } else {
         const data = await response.json()
         setError(data.message || 'Giriş başarısız')
