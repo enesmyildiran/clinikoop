@@ -13,7 +13,7 @@ export default function NotFoundPage() {
         
         <p className="text-gray-600 mb-8">
           Aradığınız sayfa mevcut değil veya taşınmış olabilir. 
-          Lütfen URL'yi kontrol edin veya ana sayfaya dönün.
+          Lütfen URL&apos;yi kontrol edin veya ana sayfaya dönün.
         </p>
         
         <div className="space-y-4">
