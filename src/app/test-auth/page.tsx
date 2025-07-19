@@ -3,6 +3,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useSession } from 'next-auth/react';
 import { FaUser, FaShieldAlt, FaHospital, FaCog } from 'react-icons/fa';
+import Link from 'next/link';
 
 export default function TestAuthPage() {
   const { data: session } = useSession();
@@ -142,34 +143,34 @@ export default function TestAuthPage() {
               <div className="bg-white rounded-lg p-4 border">
                 <h3 className="font-semibold text-gray-900 mb-2">Süper Admin Paneli</h3>
                 <p className="text-sm text-gray-600 mb-3">Tüm sistemlere erişim</p>
-                <a 
+                <Link 
                   href="/admin" 
                   className="inline-block bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
                 >
                   Test Et
-                </a>
+                </Link>
               </div>
               
               <div className="bg-white rounded-lg p-4 border">
                 <h3 className="font-semibold text-gray-900 mb-2">Klinik Dashboard</h3>
                 <p className="text-sm text-gray-600 mb-3">Klinik yönetimi</p>
-                <a 
+                <Link 
                   href="/site/dashboard" 
                   className="inline-block bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700"
                 >
                   Test Et
-                </a>
+                </Link>
               </div>
               
               <div className="bg-white rounded-lg p-4 border">
                 <h3 className="font-semibold text-gray-900 mb-2">Yetkisiz Erişim</h3>
                 <p className="text-sm text-gray-600 mb-3">Erişim reddedildi sayfası</p>
-                <a 
+                <Link 
                   href="/unauthorized" 
                   className="inline-block bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700"
                 >
                   Test Et
-                </a>
+                </Link>
               </div>
             </div>
           </div>
