@@ -1,53 +1,80 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSubdomainFromHost, isClinicAccess, isSuperAdminAccess, getClinicIdFromSubdomain } from './lib/clinic-routing';
+import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
   const { pathname, host } = request.nextUrl;
   
-  const subdomain = getSubdomainFromHost(host);
-  
-  // Ana domain (app.domain.com) - Süper Admin
-  if (isSuperAdminAccess(host)) {
-    // Klinik panellerine erişimi engelle
-    if (pathname.startsWith('/clinic')) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
-    
-    // Süper admin sayfalarına yönlendir
-    if (pathname === '/') {
-      return NextResponse.redirect(new URL('/admin', request.url));
-    }
-    
+  // Geliştirme modunda middleware'i basitleştir
+  if (process.env.NODE_ENV === 'development') {
     return NextResponse.next();
   }
-  
-  // Klinik subdomain - Klinik Paneli
-  if (isClinicAccess(host)) {
-    // Süper admin sayfalarına erişimi engelle
-    if (pathname.startsWith('/admin')) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
+
+  // API rotalarını atla
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
+  // Statik dosyaları atla
+  if (pathname.startsWith('/_next/') || pathname.startsWith('/favicon.ico')) {
+    return NextResponse.next();
+  }
+
+  // Public dosyaları atla
+  if (pathname.startsWith('/public/')) {
+    return NextResponse.next();
+  }
+
+  // Ana domain kontrolü
+  const isMainDomain = host === process.env.DOMAIN || host === `www.${process.env.DOMAIN}`;
+  const isSubdomain = host.includes('.') && !isMainDomain;
+
+  // Ana domain'de admin paneline erişim kontrolü
+  if (isMainDomain && pathname.startsWith('/admin')) {
+    try {
+      const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+      
+      if (!token) {
+        return NextResponse.redirect(new URL('/login', request.url));
+      }
+
+      // Süper admin kontrolü
+      if (!token.isSuperAdmin) {
+        return NextResponse.redirect(new URL('/unauthorized', request.url));
+      }
+    } catch (error) {
+      return NextResponse.redirect(new URL('/login', request.url));
     }
+  }
+
+  // Subdomain kontrolü (klinik erişimi)
+  if (isSubdomain) {
+    const subdomain = host.split('.')[0];
     
-    // Klinik ana sayfasına yönlendir
-    if (pathname === '/') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+    // Login/logout sayfalarına izin ver
+    if (pathname === '/login' || pathname === '/logout') {
+      return NextResponse.next();
     }
-    
-    // ClinicId'yi belirle ve header'a ekle
-    if (subdomain) {
-      const clinicId = await getClinicIdFromSubdomain(subdomain);
-      if (clinicId) {
-        const response = NextResponse.next();
-        response.headers.set('x-clinic-id', clinicId);
-        return response;
+
+    // Klinik dashboard ve diğer sayfalar için auth kontrolü
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/site')) {
+      try {
+        const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+        
+        if (!token) {
+          return NextResponse.redirect(new URL('/login', request.url));
+        }
+
+        // Klinik kullanıcısı kontrolü
+        if (token.isSuperAdmin || !token.clinicId) {
+          return NextResponse.redirect(new URL('/unauthorized', request.url));
+        }
+      } catch (error) {
+        return NextResponse.redirect(new URL('/login', request.url));
       }
     }
-    
-    return NextResponse.next();
   }
-  
-  // Geçersiz subdomain
-  return NextResponse.redirect(new URL('/not-found', request.url));
+
+  return NextResponse.next();
 }
 
 export const config = {

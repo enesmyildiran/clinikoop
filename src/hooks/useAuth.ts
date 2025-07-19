@@ -6,6 +6,10 @@ interface User {
   name: string
   role: string
   clinicId?: string
+  isActive?: boolean
+  createdAt?: string
+  updatedAt?: string
+  permissions?: string
 }
 
 interface Clinic {
@@ -14,6 +18,9 @@ interface Clinic {
   subdomain: string
   domain?: string
   isActive: boolean
+  maxUsers?: number
+  maxPatients?: number
+  maxOffers?: number
 }
 
 interface AuthData {
