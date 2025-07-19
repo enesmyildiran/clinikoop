@@ -30,11 +30,16 @@ export async function middleware(request: NextRequest) {
 
   // Ana domain'de admin paneline erişim kontrolü
   if (isMainDomain && pathname.startsWith('/admin')) {
+    // Admin login sayfasına izin ver
+    if (pathname === '/admin/login') {
+      return NextResponse.next();
+    }
+    
     try {
       const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
       
       if (!token) {
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL('/admin/login', request.url));
       }
 
       // Süper admin kontrolü
@@ -42,7 +47,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/unauthorized', request.url));
       }
     } catch (error) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/admin/login', request.url));
     }
   }
 
