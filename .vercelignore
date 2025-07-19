@@ -2,4 +2,5 @@ clinikoop_ilk_yedek_20250716_225811/
 backups/
 prisma/seed*.ts
 prisma/*.db
-prisma/dev_backup_*.db 
+prisma/dev_backup_*.db
+.next/ 
