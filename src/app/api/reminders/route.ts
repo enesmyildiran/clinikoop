@@ -180,7 +180,8 @@ export async function POST(request: NextRequest) {
       offerId: offerId && offerId !== '' ? offerId : undefined,
       priority: priority || 'MEDIUM',
       isPrivate: isPrivate || false,
-      userId
+      userId,
+      clinicId // ClinicId'yi ekle
     };
 
     const reminder = await prisma.reminder.create({
