@@ -29,6 +29,7 @@ export default function LoginPage() {
         if (data.isSuperAdmin) {
           router.push('/admin/dashboard')
         } else {
+          // Clinic user'lar için site path'i kullan
           router.push('/site/dashboard')
         }
       } else {
