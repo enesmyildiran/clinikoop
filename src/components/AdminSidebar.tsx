@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaChartBar, FaHospital, FaUsers, FaCog, FaFilePdf, FaDatabase, FaFileAlt, FaChartPie, FaShieldAlt, FaBug } from 'react-icons/fa';
+import { FaChartBar, FaHospital, FaUsers, FaCog, FaFilePdf, FaDatabase, FaFileAlt, FaChartPie, FaShieldAlt, FaBug, FaHeadset } from 'react-icons/fa';
 
 const adminMenu = [
   {
@@ -16,6 +16,7 @@ const adminMenu = [
       { href: '/admin/backup', icon: FaDatabase, label: 'Yedekleme' },
       { href: '/admin/logs', icon: FaBug, label: 'Loglar' },
       { href: '/admin/analytics', icon: FaChartPie, label: 'Analizler' },
+      { href: '/admin/support', icon: FaHeadset, label: 'Destek Talepleri' },
     ]
   }
 ];

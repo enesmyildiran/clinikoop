@@ -22,7 +22,8 @@ import {
   FaUserPlus,
   FaFilePdf,
   FaChevronDown,
-  FaChevronRight
+  FaChevronRight,
+  FaHeadset
 } from 'react-icons/fa'
 
 interface MenuGroup {
@@ -65,6 +66,7 @@ const menuGroups: MenuGroup[] = [
       { href: '/site/reminders', icon: FaBell, label: 'Hatırlatmalar' },
       { href: '/site/performance', icon: FaChartLine, label: 'Performans' },
       { href: '/site/reports', icon: FaChartPie, label: 'Raporlama' },
+      { href: '/site/support', icon: FaHeadset, label: 'Destek' },
     ]
   },
   {
