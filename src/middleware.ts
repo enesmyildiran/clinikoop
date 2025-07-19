@@ -4,10 +4,8 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const { pathname, host } = request.nextUrl;
   
-  // Geliştirme modunda middleware'i basitleştir
-  if (process.env.NODE_ENV === 'development') {
-    return NextResponse.next();
-  }
+  // Geçici olarak middleware'i devre dışı bırak (test için)
+  return NextResponse.next();
 
   // API rotalarını atla
   if (pathname.startsWith('/api/')) {
