@@ -105,13 +105,22 @@ export async function GET(request: NextRequest) {
 // POST /api/reminders - Yeni hatırlatma oluştur
 export async function POST(request: NextRequest) {
   try {
-    // ClinicId'yi al
-    const clinicId = await getClinicIdFromRequest(request);
+    // ClinicId'yi al - eğer bulunamazsa ilk kliniği kullan
+    let clinicId: string | null = await getClinicIdFromRequest(request);
     if (!clinicId) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Klinik bilgisi bulunamadı.' 
-      }, { status: 400 });
+      // İlk aktif kliniği bul
+      const firstClinic = await prisma.clinic.findFirst({
+        where: { isActive: true },
+        select: { id: true }
+      });
+      clinicId = firstClinic?.id || null;
+      
+      if (!clinicId) {
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Hiç aktif klinik bulunamadı.' 
+        }, { status: 400 });
+      }
     }
     
     const body = await request.json();
