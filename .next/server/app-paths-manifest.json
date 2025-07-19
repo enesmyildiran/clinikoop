@@ -1,13 +1,9 @@
 {
-  "/api/metrics/route": "app/api/metrics/route.js",
-  "/api/metrics/database/route": "app/api/metrics/database/route.js",
-  "/api/metrics/business/route": "app/api/metrics/business/route.js",
-  "/page": "app/page.js",
-  "/api/reminders/route": "app/api/reminders/route.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/offers/route": "app/api/offers/route.js",
   "/api/metrics/api/route": "app/api/metrics/api/route.js",
-  "/api/patients/route": "app/api/patients/route.js",
-  "/api/offer-statuses/route": "app/api/offer-statuses/route.js",
-  "/site/dashboard/page": "app/site/dashboard/page.js"
+  "/api/metrics/route": "app/api/metrics/route.js",
+  "/api/metrics/business/route": "app/api/metrics/business/route.js",
+  "/api/metrics/database/route": "app/api/metrics/database/route.js",
+  "/api/admin/prometheus/route": "app/api/admin/prometheus/route.js",
+  "/site/dashboard/page": "app/site/dashboard/page.js",
+  "/admin/analytics/page": "app/admin/analytics/page.js"
 }
