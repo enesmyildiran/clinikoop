@@ -64,15 +64,10 @@ export default function NewSupportTicketPage() {
     setError(null);
     setSuccess(false);
     try {
-      // TODO: Klinik ve kullanıcı id'si ile gönderilmeli (şimdilik sabit)
       const res = await fetch('/api/support/tickets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          clinicId: 'default_clinic',
-          createdById: 'cmd6affvt0001911cfmdczj4x'
-        })
+        body: JSON.stringify(form)
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Talep oluşturulamadı');
       setSuccess(true);

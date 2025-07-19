@@ -72,18 +72,45 @@ export async function POST(request: Request) {
       description,
       categoryId,
       priorityId,
-      clinicId,
-      createdById,
       isUrgent = false
     } = body;
 
     // Validasyon
-    if (!subject || !description || !categoryId || !priorityId || !clinicId || !createdById) {
+    if (!subject || !description || !categoryId || !priorityId) {
       return NextResponse.json(
         { error: 'Tüm gerekli alanlar doldurulmalıdır' },
         { status: 400 }
       );
     }
+
+    // İlk aktif kliniği bul
+    const firstClinic = await prisma.clinic.findFirst({
+      where: { isActive: true },
+      select: { id: true }
+    });
+
+    if (!firstClinic) {
+      return NextResponse.json(
+        { error: 'Aktif klinik bulunamadı' },
+        { status: 400 }
+      );
+    }
+
+    // İlk kullanıcıyı bul
+    const firstUser = await prisma.clinicUser.findFirst({
+      where: { clinicId: firstClinic.id },
+      select: { id: true }
+    });
+
+    if (!firstUser) {
+      return NextResponse.json(
+        { error: 'Kullanıcı bulunamadı' },
+        { status: 400 }
+      );
+    }
+
+    const clinicId = firstClinic.id;
+    const createdById = firstUser.id;
 
     // Ticket numarası oluştur (TKT-2025-001 formatında)
     const year = new Date().getFullYear();
