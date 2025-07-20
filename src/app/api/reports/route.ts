@@ -9,6 +9,12 @@ export async function POST(request: NextRequest) {
     
     // ClinicId'yi al
     const clinicId = await getClinicIdFromRequest(request);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
     
     // Tüm verileri al (filtreleme olmadan)
     const allData = await getReports({

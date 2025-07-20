@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { PageContainer } from '@/components/ui/PageContainer';
+import { useToast } from '@/components/ui/Toast';
 
 interface SupportTicket {
   id: string;
@@ -18,6 +19,7 @@ export default function SupportPage() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { addToast } = useToast();
 
   useEffect(() => {
     fetchTickets();
@@ -33,6 +35,10 @@ export default function SupportPage() {
       setTickets(data.tickets || []);
     } catch (err: any) {
       setError(err.message || 'Bilinmeyen hata');
+      addToast({
+        message: 'Destek talepleri yüklenirken hata oluştu',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }

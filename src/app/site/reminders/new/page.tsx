@@ -21,8 +21,8 @@ export default function NewReminderPage() {
     title: '',
     description: '',
     dueDate: new Date().toISOString().slice(0, 16), // Şu anki tarih ve saat
-    priority: 'MEDIUM',
-    isPrivate: false,
+    isCompleted: false,
+    isPinned: false,
     patientId: '',
     offerId: ''
   })
@@ -205,22 +205,20 @@ export default function NewReminderPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Öncelik
+                  Sabitle
                 </label>
-                <Select 
-                  value={formData.priority} 
-                  onValueChange={(value) => handleInputChange('priority', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="LOW">Düşük</SelectItem>
-                    <SelectItem value="MEDIUM">Orta</SelectItem>
-                    <SelectItem value="HIGH">Yüksek</SelectItem>
-                    <SelectItem value="URGENT">Acil</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isPinned"
+                    checked={formData.isPinned}
+                    onChange={(e) => handleInputChange('isPinned', e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="isPinned" className="text-sm text-gray-700">
+                    Bu hatırlatmayı sabitle
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -289,13 +287,13 @@ export default function NewReminderPage() {
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
-                id="isPrivate"
-                checked={formData.isPrivate}
-                onChange={(e) => handleInputChange('isPrivate', e.target.checked)}
+                id="isCompleted"
+                checked={formData.isCompleted}
+                onChange={(e) => handleInputChange('isCompleted', e.target.checked)}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="isPrivate" className="text-sm text-gray-700">
-                Bu hatırlatma sadece benim için olsun (özel)
+              <label htmlFor="isCompleted" className="text-sm text-gray-700">
+                Bu hatırlatma tamamlandı olarak işaretle
               </label>
             </div>
           </div>

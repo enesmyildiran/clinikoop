@@ -4,7 +4,7 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs']
   },
   images: {
-    domains: ['localhost', 'vercel.app', 'clinikoop.com'],
+    domains: ['localhost', 'vercel.app', 'clinikoop.com', '*.vercel.app'],
     unoptimized: true
   },
   typescript: {
@@ -21,6 +21,17 @@ const nextConfig = {
   swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production'
+  },
+  // Vercel için optimizasyonlar
+  trailingSlash: false,
+  async redirects() {
+    return [
+      {
+        source: '/admin',
+        destination: '/admin/dashboard',
+        permanent: true,
+      },
+    ]
   },
   async headers() {
     return [
@@ -42,6 +53,10 @@ const nextConfig = {
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block'
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains'
           }
         ]
       }

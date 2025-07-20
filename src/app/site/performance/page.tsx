@@ -6,6 +6,7 @@ import { FaChartLine, FaDollarSign, FaUsers, FaCheckCircle, FaArrowUp, FaArrowDo
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts'
 import { formatCurrencySymbol, CurrencyCode, DEFAULT_CURRENCY, CURRENCY_SYMBOLS } from '@/lib/currency'
 import { PageContainer } from '@/components/ui/PageContainer'
+import { useToast } from '@/components/ui/Toast'
 
 interface PerformanceData {
   totalRevenue: number
@@ -47,6 +48,7 @@ const getCurrencyIcon = (currency: CurrencyCode) => {
 export default function PerformancePage() {
   const [timeRange, setTimeRange] = useState('month')
   const [targetCurrency, setTargetCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY)
+  const { addToast } = useToast()
 
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['performance', timeRange, targetCurrency],
@@ -56,13 +58,26 @@ export default function PerformancePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ timeRange, targetCurrency })
       })
-      if (!response.ok) throw new Error('Performans verileri alınamadı')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Performans verileri alınamadı')
+      }
       const result = await response.json()
       console.log('Performance API Response:', result) // Debug için
       return result
     },
     refetchInterval: 10000 // 10 saniyede bir canlı güncelle
   })
+
+  // Error handling
+  useEffect(() => {
+    if (error) {
+      addToast({
+        message: error.message || 'Performans verileri yüklenirken hata oluştu',
+        type: 'error'
+      })
+    }
+  }, [error, addToast])
 
   const performanceStats = [
     { 

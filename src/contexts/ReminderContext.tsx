@@ -8,10 +8,7 @@ interface Reminder {
   title: string
   description?: string
   dueDate: string
-  status: 'PENDING' | 'DONE' | 'POSTPONED' | 'CLOSED_WITH_REASON'
-  reason?: string
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
-  isPrivate: boolean
+  isCompleted: boolean
   isPinned: boolean
   createdAt: string
   updatedAt: string
@@ -40,10 +37,6 @@ interface ReminderContextType {
   createReminder: (data: any) => Promise<boolean>
   updateReminder: (id: string, data: any) => Promise<boolean>
   deleteReminder: (id: string) => Promise<boolean>
-  markAsDone: (id: string) => Promise<boolean>
-  postponeReminder: (id: string, newDate: string) => Promise<boolean>
-  closeWithReason: (id: string, reason: string) => Promise<boolean>
-  togglePinned: (id: string) => Promise<boolean>
 }
 
 const ReminderContext = createContext<ReminderContextType | undefined>(undefined)
@@ -65,19 +58,19 @@ export function ReminderProvider({ children }: ReminderProviderProps) {
   const [loading, setLoading] = useState(false)
   const { addToast } = useToast()
 
-  // Aktif hatırlatmalar (PENDING durumunda olanlar)
-  const activeReminders = reminders.filter(r => r.status === 'PENDING')
+  // Aktif hatırlatmalar (tamamlanmamış olanlar)
+  const activeReminders = reminders.filter(r => !r.isCompleted)
   
   // Bugünkü hatırlatmalar
   const todayReminders = reminders.filter(r => {
     const today = new Date()
     const reminderDate = new Date(r.dueDate)
-    return r.status === 'PENDING' && 
+    return !r.isCompleted && 
            reminderDate.toDateString() === today.toDateString()
   })
 
   // Sabitlenmiş hatırlatmalar
-  const pinnedReminders = reminders.filter(r => r.isPinned && r.status === 'PENDING')
+  const pinnedReminders = reminders.filter(r => r.isPinned && !r.isCompleted)
 
   // Hatırlatmaları yenile
   const refreshReminders = async () => {
@@ -208,36 +201,7 @@ export function ReminderProvider({ children }: ReminderProviderProps) {
     }
   }
 
-  // Tamamlandı olarak işaretle
-  const markAsDone = async (id: string): Promise<boolean> => {
-    return updateReminder(id, { status: 'DONE' })
-  }
-
-  // Ertele
-  const postponeReminder = async (id: string, newDate: string): Promise<boolean> => {
-    return updateReminder(id, { 
-      status: 'POSTPONED',
-      dueDate: newDate 
-    })
-  }
-
-  // Sebep girerek kapat
-  const closeWithReason = async (id: string, reason: string): Promise<boolean> => {
-    return updateReminder(id, { 
-      status: 'CLOSED_WITH_REASON',
-      reason 
-    })
-  }
-
-  // Sabitleme durumunu değiştir
-  const togglePinned = async (id: string): Promise<boolean> => {
-    const reminder = reminders.find(r => r.id === id)
-    if (!reminder) return false
-    
-    return updateReminder(id, { 
-      isPinned: !reminder.isPinned 
-    })
-  }
+  // Bu fonksiyonlar artık gerekli değil, updateReminder kullanılıyor
 
   // İlk yükleme
   useEffect(() => {
@@ -253,11 +217,7 @@ export function ReminderProvider({ children }: ReminderProviderProps) {
     refreshReminders,
     createReminder,
     updateReminder,
-    deleteReminder,
-    markAsDone,
-    postponeReminder,
-    closeWithReason,
-    togglePinned
+    deleteReminder
   }
 
   return (

@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./db";
 import bcrypt from "bcryptjs";
+import { AuditLogger } from "./audit-logger";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -33,6 +34,9 @@ export const authOptions: NextAuthOptions = {
             );
 
             if (isPasswordValid) {
+              // Audit log - successful login
+              await AuditLogger.logLogin(clinicUser.id, true);
+              
               return {
                 id: clinicUser.id,
                 email: clinicUser.email,
@@ -50,14 +54,18 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (user) {
-            // User modelinde password yok, sadece email kontrolü
-            // Bu sadece development için - production'da password olmalı
-            if (credentials.email === user.email && credentials.password === "superadmin123") {
+            // Environment variable'dan admin şifresini al
+            const adminPassword = process.env.SUPER_ADMIN_PASSWORD || "admin123";
+            if (credentials.email === user.email && credentials.password === adminPassword) {
+              // Audit log - successful admin login
+              await AuditLogger.logLogin(user.id, true);
+              
               return {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-                role: user.role
+                role: user.role,
+                isSuperAdmin: true
               };
             }
           }
@@ -72,10 +80,10 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: parseInt(process.env.SESSION_MAX_AGE || "28800"), // 8 hours
   },
   jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: parseInt(process.env.SESSION_MAX_AGE || "28800"), // 8 hours
   },
   callbacks: {
     async jwt({ token, user }) {

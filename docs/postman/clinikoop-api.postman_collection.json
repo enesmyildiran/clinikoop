@@ -1,0 +1,876 @@
+{
+  "info": {
+    "name": "Clinikoop API",
+    "description": "Clinikoop platformunun tüm API endpoint'leri için Postman collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "clinicSubdomain",
+      "value": "demo",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🏥 Hasta Modülü",
+      "item": [
+        {
+          "name": "Hastaları Listele",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patients"]
+            }
+          }
+        },
+        {
+          "name": "Hasta Oluştur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmet Yılmaz\",\n  \"firstName\": \"Ahmet\",\n  \"lastName\": \"Yılmaz\",\n  \"email\": \"ahmet@email.com\",\n  \"phone\": \"+905551234567\",\n  \"phoneCountry\": \"TR\",\n  \"birthDate\": \"1990-01-01\",\n  \"gender\": \"MALE\",\n  \"nationality\": \"TR\",\n  \"country\": \"TR\",\n  \"address\": \"İstanbul, Türkiye\",\n  \"city\": \"İstanbul\",\n  \"emergencyContact\": \"Anne Yılmaz\",\n  \"emergencyPhone\": \"+905559876543\",\n  \"instagram\": \"@ahmetyilmaz\",\n  \"facebook\": \"ahmet.yilmaz\",\n  \"whatsapp\": \"+905551234567\",\n  \"referralSourceId\": \"source_id\",\n  \"medicalHistory\": \"Alerji: Penisilin\",\n  \"allergies\": \"Penisilin\",\n  \"insurance\": \"SGK\",\n  \"insuranceNumber\": \"12345678901\",\n  \"notes\": \"Özel notlar\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patients"]
+            }
+          }
+        },
+        {
+          "name": "Hasta Güncelle",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmet Yılmaz Güncellendi\",\n  \"email\": \"ahmet.guncel@email.com\",\n  \"phone\": \"+905551234567\",\n  \"notes\": \"Güncellenmiş notlar\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/patients?id=patient_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patients"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "patient_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Hasta Sil",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients?id=patient_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patients"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "patient_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Hasta Filtrele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/by-source?referralSourceId=source_id&search=ahmet",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patients", "by-source"],
+              "query": [
+                {
+                  "key": "referralSourceId",
+                  "value": "source_id"
+                },
+                {
+                  "key": "search",
+                  "value": "ahmet"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Hasta Sayıları",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/counts-by-source",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patients", "counts-by-source"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Teklif Modülü",
+      "item": [
+        {
+          "name": "Teklifleri Listele",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/offers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "offers"]
+            }
+          }
+        },
+        {
+          "name": "Teklif Oluştur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientInfo\": {\n    \"firstName\": \"Ahmet\",\n    \"lastName\": \"Yılmaz\",\n    \"phone\": \"+905551234567\",\n    \"email\": \"ahmet@email.com\",\n    \"specialNotes\": \"Özel notlar\"\n  },\n  \"treatmentDetails\": [\n    {\n      \"treatmentKey\": \"filling\",\n      \"treatmentName\": \"Diş Dolgusu\",\n      \"selectedTeeth\": [11, 12, 13],\n      \"toothPricing\": [\n        {\n          \"toothNumber\": 11,\n          \"price\": 500.00,\n          \"currency\": \"TRY\",\n          \"vatRate\": 20,\n          \"vatAmount\": 100.00,\n          \"totalPrice\": 600.00\n        }\n      ],\n      \"notes\": \"Kompozit dolgu\",\n      \"estimatedDays\": 1,\n      \"estimatedHours\": 2\n    }\n  ],\n  \"socials\": {\n    \"instagram\": \"@klinik\",\n    \"facebook\": \"klinik.page\",\n    \"whatsapp\": \"+905551234567\"\n  },\n  \"status\": \"draft\",\n  \"selectedTemplate\": \"default\",\n  \"verificationMethod\": \"phone\",\n  \"verificationValue\": \"4567\",\n  \"validUntil\": \"2024-02-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/offers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "offers"]
+            }
+          }
+        },
+        {
+          "name": "Teklif Detayı (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/offers/offer-slug-123",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "offers", "offer-slug-123"]
+            }
+          }
+        },
+        {
+          "name": "Teklif Güncelle",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"accepted\",\n  \"notes\": \"Teklif kabul edildi\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/offers/offer-slug-123",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "offers", "offer-slug-123"]
+            }
+          }
+        },
+        {
+          "name": "Teklif Sil",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/offers/offer-slug-123",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "offers", "offer-slug-123"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔔 Hatırlatma Modülü",
+      "item": [
+        {
+          "name": "Hatırlatmaları Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reminders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reminders"]
+            }
+          }
+        },
+        {
+          "name": "Hatırlatma Oluştur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Kontrol randevusu\",\n  \"description\": \"Hasta kontrol randevusu\",\n  \"dueDate\": \"2024-02-01T10:00:00.000Z\",\n  \"patientId\": \"patient_id\",\n  \"isPinned\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reminders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reminders"]
+            }
+          }
+        },
+        {
+          "name": "Hatırlatma Güncelle",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Güncellenmiş hatırlatma\",\n  \"isCompleted\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reminders/reminder_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reminders", "reminder_id"]
+            }
+          }
+        },
+        {
+          "name": "Hatırlatma Sil",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reminders/reminder_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reminders", "reminder_id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Raporlama Modülü",
+      "item": [
+        {
+          "name": "Rapor Oluştur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dateFrom\": \"2024-01-01\",\n  \"dateTo\": \"2024-01-31\",\n  \"currency\": \"TRY\",\n  \"salesUserId\": \"user_id\",\n  \"treatmentType\": \"filling\",\n  \"referralSourceId\": \"source_id\",\n  \"page\": 1,\n  \"pageSize\": 20\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reports",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports"]
+            }
+          }
+        },
+        {
+          "name": "Performans Metrikleri",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timeRange\": \"month\",\n  \"targetCurrency\": \"TRY\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/performance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "performance"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Destek Modülü",
+      "item": [
+        {
+          "name": "Destek Taleplerini Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "support", "tickets"]
+            }
+          }
+        },
+        {
+          "name": "Destek Talebi Oluştur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Teknik sorun\",\n  \"description\": \"Sistem yavaş çalışıyor\",\n  \"categoryId\": \"category_id\",\n  \"priorityId\": \"priority_id\",\n  \"isUrgent\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "support", "tickets"]
+            }
+          }
+        },
+        {
+          "name": "Destek Talebi Detayı",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets/ticket_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "support", "tickets", "ticket_id"]
+            }
+          }
+        },
+        {
+          "name": "Destek Talebi Güncelle",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statusId\": \"status_id\",\n  \"assignedToId\": \"user_id\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets/ticket_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "support", "tickets", "ticket_id"]
+            }
+          }
+        },
+        {
+          "name": "Mesaj Gönder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Mesaj içeriği\",\n  \"authorName\": \"Kullanıcı Adı\",\n  \"authorType\": \"CLINIC_USER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets/ticket_id/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "support", "tickets", "ticket_id", "messages"]
+            }
+          }
+        },
+        {
+          "name": "Kategorileri Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "support", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Öncelikleri Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/priorities",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "support", "priorities"]
+            }
+          }
+        },
+        {
+          "name": "Durumları Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/statuses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "support", "statuses"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔧 Admin Modülü",
+      "item": [
+        {
+          "name": "Admin Analitikleri",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clinicId\": \"clinic_id\",\n  \"dataTypes\": [\"clinicStats\", \"userActivity\"],\n  \"dateRange\": {\n    \"start\": \"2024-01-01\",\n    \"end\": \"2024-01-31\"\n  },\n  \"pageSize\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/analytics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "analytics"]
+            }
+          }
+        },
+        {
+          "name": "Klinikleri Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/clinics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "clinics"]
+            }
+          }
+        },
+        {
+          "name": "Kullanıcıları Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Sistem Logları",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/logs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "logs"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📄 PDF Template Modülü",
+      "item": [
+        {
+          "name": "PDF Şablonlarını Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pdf-templates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pdf-templates"]
+            }
+          }
+        },
+        {
+          "name": "PDF Şablonu Oluştur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Varsayılan Şablon\",\n  \"description\": \"Standart teklif şablonu\",\n  \"content\": \"<html><body><h1>Teklif Şablonu</h1></body></html>\",\n  \"isDefault\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pdf-templates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pdf-templates"]
+            }
+          }
+        },
+        {
+          "name": "PDF Şablonu Güncelle",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Güncellenmiş Şablon\",\n  \"description\": \"Güncellenmiş açıklama\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pdf-templates/template_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pdf-templates", "template_id"]
+            }
+          }
+        },
+        {
+          "name": "PDF Şablonu Sil",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pdf-templates/template_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pdf-templates", "template_id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔗 Referral Sources",
+      "item": [
+        {
+          "name": "Referral Sources Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/referral-sources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "referral-sources"]
+            }
+          }
+        },
+        {
+          "name": "Referral Source Oluştur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"instagram\",\n  \"displayName\": \"Instagram\",\n  \"description\": \"Instagram reklamları\",\n  \"color\": \"#E4405F\",\n  \"order\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/referral-sources",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "referral-sources"]
+            }
+          }
+        },
+        {
+          "name": "Referral Source Güncelle",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"Instagram Güncellendi\",\n  \"color\": \"#FF6B9D\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/referral-sources/source_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "referral-sources", "source_id"]
+            }
+          }
+        },
+        {
+          "name": "Referral Source Sil",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/referral-sources/source_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "referral-sources", "source_id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Ayarlar",
+      "item": [
+        {
+          "name": "Ayarları Getir",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings"]
+            }
+          }
+        },
+        {
+          "name": "Ayarları Güncelle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clinic_name\": \"Demo Klinik\",\n  \"clinic_address\": \"İstanbul, Türkiye\",\n  \"clinic_phone\": \"+905551234567\",\n  \"clinic_email\": \"info@demoklinik.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Metrikler",
+      "item": [
+        {
+          "name": "Prometheus Metrikleri",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "metrics"]
+            }
+          }
+        },
+        {
+          "name": "API Metrikleri",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/metrics/api",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "metrics", "api"]
+            }
+          }
+        },
+        {
+          "name": "İş Metrikleri",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/metrics/business",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "metrics", "business"]
+            }
+          }
+        },
+        {
+          "name": "Database Metrikleri",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/metrics/database",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "metrics", "database"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Kullanıcı Girişi",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Kullanıcı Bilgileri",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Kullanıcı Çıkışı",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Kullanıcı Profili",
+      "item": [
+        {
+          "name": "Profil Bilgileri",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Profil Güncelle",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Güncellenmiş Ad\",\n  \"email\": \"guncel@email.com\",\n  \"phone\": \"+905559876543\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+} 

@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { FaArrowLeft, FaSave } from 'react-icons/fa';
+import { useToast } from '@/components/ui/Toast';
 
 interface Category {
   id: string;
@@ -37,6 +38,7 @@ export default function NewSupportTicketPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const { addToast } = useToast();
 
   useEffect(() => {
     fetchOptions();
@@ -59,6 +61,10 @@ export default function NewSupportTicketPage() {
       setPriorities(priData.priorities || []);
     } catch (err: any) {
       setError(err.message || 'Bilinmeyen hata');
+      addToast({
+        message: 'Seçenekler yüklenirken hata oluştu',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -82,9 +88,17 @@ export default function NewSupportTicketPage() {
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Talep oluşturulamadı');
       setSuccess(true);
+      addToast({
+        message: 'Destek talebi başarıyla oluşturuldu',
+        type: 'success'
+      });
       setTimeout(() => router.push('/site/support'), 1200);
     } catch (err: any) {
       setError(err.message || 'Bilinmeyen hata');
+      addToast({
+        message: err.message || 'Destek talebi oluşturulamadı',
+        type: 'error'
+      });
     } finally {
       setSubmitting(false);
     }

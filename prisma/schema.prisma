@@ -28,6 +28,7 @@ model Clinic {
   users                 ClinicUser[]
   patients              Patient[]
   offers                Offer[]
+  patientOffers         PatientOffer[]
   reminders             Reminder[]
   notes                 Note[]
   settings              ClinicSetting[]
@@ -86,7 +87,8 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
-  role      String   @default("USER")
+  role      String   @default("SUPER_ADMIN")
+  password  String?  // Optional for development
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -187,6 +189,7 @@ model PatientOffer {
   id        String   @id @default(cuid())
   patientId String
   offerId   String
+  clinicId  String
   assigned  Boolean  @default(false)
   visible   Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -194,6 +197,7 @@ model PatientOffer {
 
   patient   Patient  @relation(fields: [patientId], references: [id])
   offer     Offer    @relation(fields: [offerId], references: [id])
+  clinic    Clinic   @relation(fields: [clinicId], references: [id])
 
   @@unique([patientId, offerId])
   @@map("patient_offers")
@@ -434,4 +438,15 @@ model PDFTemplate {
   offers      Offer[]
 
   @@map("pdf_templates")
+}
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  count     Int      @default(1)
+  resetTime DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("rate_limits")
 } 

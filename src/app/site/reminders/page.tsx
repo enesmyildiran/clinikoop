@@ -49,13 +49,17 @@ export default function RemindersPage() {
 
     // Durum filtresi
     if (statusFilter) {
-      filtered = filtered.filter(r => r.status === statusFilter)
+      if (statusFilter === 'completed') {
+        filtered = filtered.filter(r => r.isCompleted)
+      } else if (statusFilter === 'pending') {
+        filtered = filtered.filter(r => !r.isCompleted)
+      }
     }
 
-    // Öncelik filtresi
-    if (priorityFilter) {
-      filtered = filtered.filter(r => r.priority === priorityFilter)
-    }
+    // Öncelik filtresi - Artık yok, kaldırıldı
+    // if (priorityFilter) {
+    //   filtered = filtered.filter(r => r.priority === priorityFilter)
+    // }
 
     // Tarih filtresi
     if (dateFilter) {
@@ -87,7 +91,7 @@ export default function RemindersPage() {
         case 'overdue':
           filtered = filtered.filter(r => {
             const dueDate = new Date(r.dueDate)
-            return dueDate < today && r.status === 'PENDING'
+            return dueDate < today && !r.isCompleted
           })
           break
       }
@@ -109,9 +113,9 @@ export default function RemindersPage() {
           bValue = new Date(b.dueDate)
           break
         case 'priority':
-          const priorityOrder = { 'URGENT': 4, 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 }
-          aValue = priorityOrder[a.priority as keyof typeof priorityOrder]
-          bValue = priorityOrder[b.priority as keyof typeof priorityOrder]
+          // Öncelik artık yok, sadece tarihe göre sırala
+          aValue = new Date(a.dueDate)
+          bValue = new Date(b.dueDate)
           break
         case 'createdAt':
           aValue = new Date(a.createdAt)
@@ -174,10 +178,10 @@ export default function RemindersPage() {
 
   const getStatusStats = () => {
     const stats = {
-      pending: reminders.filter(r => r.status === 'PENDING').length,
-      done: reminders.filter(r => r.status === 'DONE').length,
-      postponed: reminders.filter(r => r.status === 'POSTPONED').length,
-      overdue: reminders.filter(r => new Date(r.dueDate) < new Date() && r.status === 'PENDING').length
+      pending: reminders.filter(r => !r.isCompleted).length,
+      done: reminders.filter(r => r.isCompleted).length,
+      postponed: 0, // Artık erteleme yok
+      overdue: reminders.filter(r => new Date(r.dueDate) < new Date() && !r.isCompleted).length
     }
     return stats
   }

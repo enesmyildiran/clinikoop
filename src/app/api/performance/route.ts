@@ -4,10 +4,28 @@ import { convertCurrencySync, DEFAULT_CURRENCY } from '@/lib/currency';
 import { getClinicIdFromRequest } from '@/lib/clinic-routing';
 
 export async function GET() {
-  return POST(new NextRequest('http://localhost:3000/api/performance', {
-    method: 'POST',
-    body: JSON.stringify({ timeRange: 'month', targetCurrency: DEFAULT_CURRENCY })
-  }));
+  try {
+    const clinicId = await getClinicIdFromRequest(new NextRequest('http://localhost:3000/api/performance'));
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
+
+    // Default parametrelerle POST'u çağır
+    const defaultRequest = new NextRequest('http://localhost:3000/api/performance', {
+      method: 'POST',
+      body: JSON.stringify({ timeRange: 'month', targetCurrency: DEFAULT_CURRENCY })
+    });
+    
+    return POST(defaultRequest);
+  } catch (error) {
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Performance verisi alınamadı.' 
+    }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -16,6 +34,12 @@ export async function POST(request: NextRequest) {
     
     // ClinicId'yi al
     const clinicId = await getClinicIdFromRequest(request);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
     
     // Tüm verileri al
     const allData = await getReports({

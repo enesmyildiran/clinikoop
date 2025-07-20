@@ -194,6 +194,7 @@ export async function POST(req: NextRequest) {
       data: {
         patientId: patient.id,
         offerId: offer.id,
+        clinicId: clinicId,
         assigned: true,
         visible: true,
       },

@@ -41,6 +41,63 @@ export async function GET(req: NextRequest) {
       }, { status: 400 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    // Eğer id parametresi varsa, tek hasta getir
+    if (id) {
+      const patient = await prisma.patient.findFirst({
+        where: {
+          id: id,
+          clinicId: clinicId,
+          isActive: true,
+        },
+        include: {
+          referralSource: {
+            select: {
+              id: true,
+              name: true,
+              displayName: true,
+              color: true,
+            },
+          },
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          offers: {
+            include: {
+              offer: {
+                include: {
+                  status: {
+                    select: {
+                      id: true,
+                      name: true,
+                      displayName: true,
+                      color: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!patient) {
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Hasta bulunamadı.' 
+        }, { status: 404 });
+      }
+
+      return NextResponse.json({ patient });
+    }
+
+    // Tüm hastaları listele
     const patients = await prisma.patient.findMany({
       where: {
         clinicId: clinicId,
@@ -261,11 +318,31 @@ export async function PUT(req: NextRequest) {
     // Güncellemeden sonra zorunlu alanlar boş mu kontrol et
     const newName = data.name !== undefined ? data.name : existingPatient.name;
     const newPhone = data.phone !== undefined ? data.phone : existingPatient.phone;
+    const newEmail = data.email !== undefined ? data.email : existingPatient.email;
+    
     if (!newName || newName.length < 2) {
       return NextResponse.json({ error: 'Ad alanı zorunludur ve en az 2 karakter olmalıdır.' }, { status: 400 });
     }
     if (!newPhone || newPhone.length < 8) {
       return NextResponse.json({ error: 'Telefon alanı zorunludur ve en az 8 karakter olmalıdır.' }, { status: 400 });
+    }
+
+    // Duplicate kontrol (kendisi hariç)
+    if (newPhone !== existingPatient.phone || newEmail !== existingPatient.email) {
+      const duplicate = await prisma.patient.findFirst({
+        where: {
+          OR: [
+            { phone: newPhone },
+            { email: newEmail || undefined },
+          ],
+          clinicId: clinicId,
+          isActive: true,
+          id: { not: id }
+        },
+      });
+      if (duplicate) {
+        return NextResponse.json({ error: 'Bu telefon veya e-posta ile kayıtlı başka bir hasta var.' }, { status: 409 });
+      }
     }
 
     const patient = await prisma.patient.update({

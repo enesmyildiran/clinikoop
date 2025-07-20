@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/db'
+import { RateLimitService } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,17 @@ export async function POST(request: NextRequest) {
         { message: 'E-posta ve şifre gerekli' },
         { status: 400 }
       )
+    }
+
+    // Rate limiting check
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const rateLimit = await RateLimitService.checkRateLimit(`login:${ip}`, 5, 15 * 60 * 1000);
+    
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { message: 'Çok fazla giriş denemesi. Lütfen 15 dakika bekleyin.' },
+        { status: 429 }
+      );
     }
 
     // Önce User (süper admin) modelinde ara

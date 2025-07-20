@@ -6,6 +6,7 @@ import { SessionProvider } from 'next-auth/react'
 import { ReminderProvider } from '@/contexts/ReminderContext'
 import { NotificationProvider } from '@/contexts/NotificationContext'
 import { ToastProvider } from '@/components/ui/Toast'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -20,13 +21,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <ReminderProvider>
-            <NotificationProvider>
-              {children}
-            </NotificationProvider>
-          </ReminderProvider>
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <ReminderProvider>
+              <NotificationProvider>
+                {children}
+              </NotificationProvider>
+            </ReminderProvider>
+          </ToastProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </SessionProvider>
   )

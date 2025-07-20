@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/Checkbox'
 import { PhoneInput } from '@/components/ui/PhoneInput'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { useQuery } from '@tanstack/react-query'
+import { useToast } from '@/components/ui/Toast'
 
 // Ülke kodundan ülke ismine mapping
 const countryNames: { [key: string]: string } = {
@@ -82,6 +83,7 @@ export default function NewPatientPage() {
 
   const [errors, setErrors] = useState<any>({})
   const [isLoading, setIsLoading] = useState(false)
+  const { addToast } = useToast()
 
   // Kaynakları getir
   const { data: sources = [] } = useQuery({
@@ -163,13 +165,23 @@ export default function NewPatientPage() {
         body: JSON.stringify(payload)
       })
       if (res.ok) {
+        addToast({
+          message: 'Hasta başarıyla oluşturuldu',
+          type: 'success'
+        })
         router.push('/site/patients')
       } else {
         const data = await res.json()
-        alert(data.error || 'Kayıt başarısız!')
+        addToast({
+          message: data.error || 'Hasta oluşturulamadı',
+          type: 'error'
+        })
       }
     } catch (e) {
-      alert('Sunucu hatası!')
+      addToast({
+        message: 'Sunucu hatası oluştu',
+        type: 'error'
+      })
     }
     setIsLoading(false)
   }

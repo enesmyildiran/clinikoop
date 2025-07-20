@@ -7,8 +7,8 @@ const reminderSchema = z.object({
   title: z.string().min(2),
   description: z.string().optional(),
   dueDate: z.string(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
-  isPrivate: z.boolean().optional(),
+  isCompleted: z.boolean().optional(),
+  isPinned: z.boolean().optional(),
   userId: z.string(),
   offerId: z.string().optional(),
   patientId: z.string().optional(),
@@ -35,9 +35,9 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Status filtresi
+    // Tamamlanma durumu filtresi
     if (status) {
-      where.status = status;
+      where.isCompleted = status === 'COMPLETED';
     }
 
     // Patient filtresi
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     }
     
     const body = await request.json();
-    const { title, description, dueDate, patientId, offerId, priority, isPrivate } = body;
+    const { title, description, dueDate, patientId, offerId, isCompleted, isPinned } = body;
 
     // Gerekli alanları kontrol et
     if (!title || !dueDate) {
@@ -201,16 +201,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // priorityId validasyonu
-    let validPriorityId = null;
-    if (priority && priority !== '') {
-      const priorityRecord = await prisma.supportPriority.findFirst({
-        where: { id: priority }
-      });
-      if (priorityRecord) {
-        validPriorityId = priority;
-      }
-    }
+    // isPinned validasyonu
+    const validIsPinned = isPinned || false;
 
     const data: any = {
       title,
@@ -218,8 +210,8 @@ export async function POST(request: NextRequest) {
       dueDate: parsedDueDate,
       patientId: validPatientId,
       offerId: validOfferId,
-      priorityId: validPriorityId,
-      isPrivate: isPrivate || false,
+      isCompleted: isCompleted || false,
+      isPinned: validIsPinned,
       userId,
       clinicId
     };

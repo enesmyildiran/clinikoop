@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { getClinicIdFromRequest } from '@/lib/clinic-routing'
 
 // PUT /api/reminders/[id] - Hatırlatma güncelle
 export async function PUT(
@@ -9,11 +10,17 @@ export async function PUT(
   try {
     const { id } = params
     const body = await request.json()
-    const { title, description, dueDate, status, reason, priority, isPrivate, isPinned } = body
+    const { title, description, dueDate, isCompleted, isPinned } = body
 
-    // Hatırlatmanın var olup olmadığını kontrol et
-    const existingReminder = await prisma.reminder.findUnique({
-      where: { id }
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(request)
+    
+    // Hatırlatmanın var olup olmadığını kontrol et (clinicId ile)
+    const existingReminder = await prisma.reminder.findFirst({
+      where: { 
+        id,
+        clinicId: clinicId || undefined
+      }
     })
 
     if (!existingReminder) {
@@ -29,10 +36,7 @@ export async function PUT(
     if (title !== undefined) updateData.title = title
     if (description !== undefined) updateData.description = description
     if (dueDate !== undefined) updateData.dueDate = new Date(dueDate)
-    if (status !== undefined) updateData.status = status
-    if (reason !== undefined) updateData.reason = reason
-    if (priority !== undefined) updateData.priority = priority
-    if (isPrivate !== undefined) updateData.isPrivate = isPrivate
+    if (isCompleted !== undefined) updateData.isCompleted = isCompleted
     if (isPinned !== undefined) updateData.isPinned = isPinned
 
     const reminder = await prisma.reminder.update({
@@ -79,9 +83,15 @@ export async function DELETE(
   try {
     const { id } = params
 
-    // Hatırlatmanın var olup olmadığını kontrol et
-    const existingReminder = await prisma.reminder.findUnique({
-      where: { id }
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(request)
+
+    // Hatırlatmanın var olup olmadığını kontrol et (clinicId ile)
+    const existingReminder = await prisma.reminder.findFirst({
+      where: { 
+        id,
+        clinicId: clinicId || undefined
+      }
     })
 
     if (!existingReminder) {
@@ -113,8 +123,14 @@ export async function GET(
   try {
     const { id } = params
 
-    const reminder = await prisma.reminder.findUnique({
-      where: { id },
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(request)
+
+    const reminder = await prisma.reminder.findFirst({
+      where: { 
+        id,
+        clinicId: clinicId || undefined
+      },
       include: {
         patient: {
           select: {

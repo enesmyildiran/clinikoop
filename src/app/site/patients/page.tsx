@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { FaPlus, FaUser, FaPhone, FaEnvelope, FaSearch, FaInstagram, FaFacebook, FaWhatsapp, FaBell, FaEye, FaEdit, FaGlobe } from 'react-icons/fa'
 import { Button } from '@/components/ui/Button'
 import { useQuery } from '@tanstack/react-query'
+import { useToast } from '@/components/ui/Toast'
 import { PageContainer } from '@/components/ui/PageContainer'
 
 // Ülke bayrakları için emoji mapping
@@ -99,6 +100,7 @@ export default function PatientsPage() {
   const [patients, setPatients] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const { addToast } = useToast()
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -134,6 +136,10 @@ export default function PatientsPage() {
       setPatients(filtered)
     } catch (error) {
       console.error('Error fetching patients:', error)
+      addToast({
+        message: 'Hastalar yüklenirken hata oluştu',
+        type: 'error'
+      })
       setPatients([])
     }
     setLoading(false)

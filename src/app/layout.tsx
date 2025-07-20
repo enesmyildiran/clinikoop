@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Providers from './providers'
+import { logEnvironmentInfo } from '@/lib/env-validation'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,6 +16,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Development'da environment bilgilerini logla
+  logEnvironmentInfo();
+
   return (
     <html lang="tr">
       <body className={inter.className + ' overflow-x-hidden'}>

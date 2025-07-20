@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getClinicIdFromRequest } from '@/lib/clinic-routing';
 
 // Destek talebi detayını getir
 export async function GET(
@@ -7,10 +8,21 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
+
     const { id } = params;
 
-    const ticket = await prisma.supportTicket.findUnique({
-      where: { id },
+    const ticket = await prisma.supportTicket.findFirst({
+      where: { 
+        id: id,
+        clinicId: clinicId 
+      },
       include: {
         clinic: {
           select: { name: true, subdomain: true }
@@ -53,13 +65,24 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
+
     const { id } = params;
     const body = await request.json();
     const { statusId, priorityId, assignedToId, isUrgent } = body;
 
-    // Ticket'ın var olduğunu kontrol et
-    const existingTicket = await prisma.supportTicket.findUnique({
-      where: { id }
+    // Ticket'ın bu kliniğe ait olduğunu kontrol et
+    const existingTicket = await prisma.supportTicket.findFirst({
+      where: { 
+        id: id,
+        clinicId: clinicId 
+      }
     });
 
     if (!existingTicket) {
@@ -77,7 +100,10 @@ export async function PATCH(
     if (isUrgent !== undefined) updateData.isUrgent = isUrgent;
 
     const ticket = await prisma.supportTicket.update({
-      where: { id },
+      where: { 
+        id: id,
+        clinicId: clinicId 
+      },
       data: updateData,
       include: {
         clinic: {

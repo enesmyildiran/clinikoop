@@ -7,7 +7,8 @@ import { FaUser, FaPhone, FaEnvelope, FaBirthdayCake, FaInstagram, FaFacebook, F
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Button } from '@/components/ui/Button';
 import { PhoneInput } from '@/components/ui/PhoneInput';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query'
+import { useToast } from '@/components/ui/Toast';
 
 // Ülke bayrakları için emoji mapping
 const countryFlags: { [key: string]: string } = {
@@ -141,6 +142,7 @@ export default function PatientDetailPage() {
   const [showDeletePatientDialog, setShowDeletePatientDialog] = useState(false);
   const [showDeleteOfferDialog, setShowDeleteOfferDialog] = useState(false);
   const [offerToDelete, setOfferToDelete] = useState<string | null>(null);
+  const { addToast } = useToast()
 
   // Kaynakları getir
   const { data: sources = [] } = useQuery({
@@ -178,8 +180,22 @@ export default function PatientDetailPage() {
     try {
       const res = await fetch(`/api/patients?id=${patientId}`, { method: 'DELETE' });
       if (res.ok) {
-        router.push('/patients');
+        addToast({
+          message: 'Hasta başarıyla silindi',
+          type: 'success'
+        })
+        router.push('/site/patients');
+      } else {
+        addToast({
+          message: 'Hasta silinirken hata oluştu',
+          type: 'error'
+        })
       }
+    } catch (error) {
+      addToast({
+        message: 'Sunucu hatası oluştu',
+        type: 'error'
+      })
     } finally {
       setDeleting(false);
     }
@@ -217,12 +233,21 @@ export default function PatientDetailPage() {
       if (res.ok) {
         setPatient(responseData.patient);
         setIsEditing(false);
-        console.log('Hasta başarıyla güncellendi');
+        addToast({
+          message: 'Hasta başarıyla güncellendi',
+          type: 'success'
+        })
       } else {
-        console.error('API hatası:', responseData);
+        addToast({
+          message: responseData.error || 'Hasta güncellenirken hata oluştu',
+          type: 'error'
+        })
       }
     } catch (error) {
-      console.error('Hasta güncellenirken hata:', error);
+      addToast({
+        message: 'Sunucu hatası oluştu',
+        type: 'error'
+      })
     }
   };
 

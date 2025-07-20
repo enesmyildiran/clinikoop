@@ -1,6 +1,6 @@
 {
   "name": "clinikoop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -17,7 +17,11 @@
     "setup:users": "node scripts/setup-users.js",
     "setup:super-admin": "node scripts/create-super-admin.js",
     "setup:standard-users": "node scripts/create-standard-users.js",
-    "deploy:setup": "node scripts/deploy-setup.js"
+    "deploy:setup": "node scripts/deploy-setup.js",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "todo:check": "echo '🚨 TODO Kontrolü: docs/TODO.md dosyasını kontrol edin' && cat docs/TODO.md | head -20",
+    "todo:fix-hooks": "echo '🔧 React Hook Dependencies düzeltme başlatılıyor...' && npm run lint",
+    "todo:fix-analytics": "echo '📊 Analytics page yeniden oluşturma...' && cp src/app/admin/analytics/page.tsx.disabled src/app/admin/analytics/page.tsx"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -29,6 +33,7 @@
     "@radix-ui/react-switch": "^1.2.5",
     "@react-pdf/renderer": "^4.3.0",
     "@tanstack/react-query": "^5.81.2",
+    "autoprefixer": "^10.0.1",
     "axios": "^1.10.0",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.0.0",
@@ -50,7 +55,6 @@
     "recharts": "^3.0.2",
     "tailwind-merge": "^2.2.0",
     "tailwindcss": "^3.3.0",
-    "autoprefixer": "^10.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -64,9 +68,12 @@
     "postcss": "^8",
     "prisma": "^5.7.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5.3.3"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

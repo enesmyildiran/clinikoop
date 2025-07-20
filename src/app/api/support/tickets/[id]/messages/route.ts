@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getClinicIdFromRequest } from '@/lib/clinic-routing';
 
 // Destek talebi mesajlarını getir
 export async function GET(
@@ -7,7 +8,30 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
+
     const { id } = params;
+
+    // Önce ticket'ın bu kliniğe ait olduğunu kontrol et
+    const ticket = await prisma.supportTicket.findFirst({
+      where: { 
+        id: id,
+        clinicId: clinicId 
+      }
+    });
+
+    if (!ticket) {
+      return NextResponse.json(
+        { error: 'Destek talebi bulunamadı' },
+        { status: 404 }
+      );
+    }
 
     const messages = await prisma.supportMessage.findMany({
       where: { ticketId: id },
@@ -30,9 +54,17 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
+
     const { id } = params;
     const body = await request.json();
-    const { content, authorId, authorName, authorType } = body;
+    const { content, authorName, authorType } = body;
 
     // Validasyon
     if (!content || !authorName || !authorType) {
@@ -42,9 +74,12 @@ export async function POST(
       );
     }
 
-    // Ticket'ın var olduğunu kontrol et
-    const ticket = await prisma.supportTicket.findUnique({
-      where: { id }
+    // Ticket'ın bu kliniğe ait olduğunu kontrol et
+    const ticket = await prisma.supportTicket.findFirst({
+      where: { 
+        id: id,
+        clinicId: clinicId 
+      }
     });
 
     if (!ticket) {
@@ -54,12 +89,26 @@ export async function POST(
       );
     }
 
+    // Klinik kullanıcısını bul
+    const user = await prisma.clinicUser.findFirst({
+      where: { 
+        clinicId: clinicId,
+        isActive: true 
+      },
+      select: { id: true }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Klinik kullanıcısı bulunamadı' },
+        { status: 400 }
+      );
+    }
+
     const message = await prisma.supportMessage.create({
       data: {
         ticketId: id,
-        authorId: authorId || null,
-        authorName,
-        authorType,
+        authorId: user.id,
         content
       }
     });

@@ -1,20 +1,26 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getClinicIdFromRequest } from '@/lib/clinic-routing';
 
 // Destek talepleri listesi
 export async function GET(request: Request) {
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
+
     const { searchParams } = new URL(request.url);
-    const clinicId = searchParams.get('clinicId');
     const status = searchParams.get('status');
     const category = searchParams.get('category');
     const priority = searchParams.get('priority');
 
-    const where: any = {};
-    
-    if (clinicId) {
-      where.clinicId = clinicId;
-    }
+    const where: any = {
+      clinicId: clinicId
+    };
     
     if (status) {
       where.status = { name: status };
@@ -65,6 +71,14 @@ export async function GET(request: Request) {
 // Yeni destek talebi oluşturma
 export async function POST(request: Request) {
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
+    }
+
     const body = await request.json();
     const {
       subject,
@@ -82,34 +96,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // İlk aktif kliniği bul
-    const firstClinic = await prisma.clinic.findFirst({
-      where: { isActive: true },
+    // Klinik kullanıcısını bul
+    const user = await prisma.clinicUser.findFirst({
+      where: { 
+        clinicId: clinicId,
+        isActive: true 
+      },
       select: { id: true }
     });
 
-    if (!firstClinic) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Aktif klinik bulunamadı' },
+        { error: 'Klinik kullanıcısı bulunamadı' },
         { status: 400 }
       );
     }
 
-    // Herhangi bir kullanıcıyı bul (klinik fark etmez)
-    const firstUser = await prisma.clinicUser.findFirst({
-      where: { isActive: true },
-      select: { id: true }
-    });
-
-    if (!firstUser) {
-      return NextResponse.json(
-        { error: 'Kullanıcı bulunamadı' },
-        { status: 400 }
-      );
-    }
-
-    const clinicId = firstClinic.id;
-    const createdById = firstUser.id;
+    const createdById = user.id;
 
     // Ticket numarası oluştur (TKT-2025-001 formatında)
     const year = new Date().getFullYear();
@@ -143,13 +146,13 @@ export async function POST(request: Request) {
     const ticket = await prisma.supportTicket.create({
       data: {
         ticketNumber,
-        title: subject, // title alanı için subject kullanıyoruz
+        title: subject,
         subject,
         description,
         isUrgent,
         clinicId,
-        authorId: createdById, // authorId alanı için createdById kullanıyoruz
-        createdById: createdById, // createdById de aynı kullanıcı
+        authorId: createdById,
+        createdById: createdById,
         categoryId,
         priorityId,
         statusId: defaultStatus.id
