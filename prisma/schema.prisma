@@ -60,7 +60,6 @@ model ClinicUser {
   offers      Offer[]
   reminders   Reminder[]
   notes       Note[]
-  tickets     SupportTicket[]
   messages    SupportMessage[]
   createdTickets SupportTicket[] @relation("TicketCreatedBy")
   assignedTickets SupportTicket[] @relation("TicketAssignedTo")
