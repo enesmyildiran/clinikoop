@@ -157,7 +157,6 @@ model Offer {
   description       String?
   totalPrice        Float
   currency          String   @default("TRY")
-  statusString      String   @default("DRAFT")
   validUntil        DateTime?
   isActive          Boolean  @default(true)
   isDeleted         Boolean  @default(false)
