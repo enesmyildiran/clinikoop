@@ -45,8 +45,7 @@ export async function GET(request: Request) {
         status: true,
         _count: {
           select: {
-            messages: true,
-            attachments: true
+            messages: true
           }
         }
       },

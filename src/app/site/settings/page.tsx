@@ -12,70 +12,70 @@ const settingCategories = [
     title: 'Genel Ayarlar',
     icon: <FaCog className="text-blue-600" />,
     description: 'Sistem genel ayarları ve temel yapılandırma',
-    path: '/settings/general'
+    path: '/site/settings/general'
   },
   {
     id: 'pdf',
     title: 'PDF Ayarları',
     icon: <FaFilePdf className="text-red-600" />,
     description: 'PDF şablonları ve teklif ayarları',
-    path: '/settings/pdf'
+    path: '/site/settings/pdf'
   },
   {
     id: 'currency',
     title: 'Para Birimi ve Döviz',
     icon: <FaMoneyBillWave className="text-green-600" />,
     description: 'Varsayılan para birimi ve döviz kuru ayarları',
-    path: '/settings/currency'
+    path: '/site/settings/currency'
   },
   {
     id: 'appearance',
     title: 'Görünüm',
     icon: <FaPalette className="text-purple-600" />,
     description: 'Tema, renkler ve görsel ayarlar',
-    path: '/settings/appearance'
+    path: '/site/settings/appearance'
   },
   {
     id: 'notifications',
     title: 'Bildirimler',
     icon: <FaBell className="text-orange-600" />,
     description: 'E-posta ve sistem bildirimleri',
-    path: '/settings/notifications'
+    path: '/site/settings/notifications'
   },
   {
     id: 'security',
     title: 'Güvenlik',
     icon: <FaShieldAlt className="text-red-600" />,
     description: 'Şifre politikaları ve güvenlik ayarları',
-    path: '/settings/security'
+    path: '/site/settings/security'
   },
   {
     id: 'database',
     title: 'Veritabanı',
     icon: <FaDatabase className="text-green-600" />,
     description: 'Veritabanı yedekleme ve bakım',
-    path: '/settings/database'
+    path: '/site/settings/database'
   },
   {
     id: 'language',
     title: 'Dil ve Bölge',
     icon: <FaGlobe className="text-indigo-600" />,
     description: 'Dil, saat dilimi ve tarih formatı',
-    path: '/settings/language'
+    path: '/site/settings/language'
   },
   {
     id: 'statuses',
     title: 'Teklif Durumları',
     icon: <FaTags className="text-emerald-600" />,
     description: 'Teklif durumları ve pipeline yönetimi',
-    path: '/settings/statuses'
+    path: '/site/settings/statuses'
   },
   {
     id: 'referral-sources',
     title: 'Hasta Kaynakları',
     icon: <FaEye className="text-cyan-600" />,
     description: 'Hasta kaynakları ve referans yönetimi',
-    path: '/settings/referral-sources'
+    path: '/site/settings/referral-sources'
   }
 ]
 
@@ -119,21 +119,21 @@ export default function SettingsPage() {
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Hızlı Erişim</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link 
-            href="/settings/pdf"
+            href="/site/settings/pdf"
             className="flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors"
           >
             <FaFilePdf className="text-red-600" />
             <span className="text-sm font-medium">PDF Ayarları</span>
           </Link>
           <Link 
-            href="/settings/currency"
+            href="/site/settings/currency"
             className="flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors"
           >
             <FaMoneyBillWave className="text-green-600" />
             <span className="text-sm font-medium">Para Birimi</span>
           </Link>
           <Link 
-            href="/settings/general"
+            href="/site/settings/general"
             className="flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-blue-50 transition-colors"
           >
             <FaCog className="text-blue-600" />

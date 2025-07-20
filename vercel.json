@@ -5,15 +5,40 @@
   "framework": "nextjs",
   "regions": ["iad1"],
   "env": {
-    "NEXTAUTH_URL": "@nextauth_url",
+    "NEXTAUTH_URL": "https://clinikoop.vercel.app",
     "NEXTAUTH_SECRET": "@nextauth_secret",
     "DATABASE_URL": "@database_url"
   },
   "functions": {
-    "src/app/api/**/*.ts": {
+    "src/app/**/*.tsx": {
       "maxDuration": 30
     }
   },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "origin-when-cross-origin"
+        }
+      ]
+    }
+  ],
   "build": {
     "env": {
       "DATABASE_URL": "@database_url"

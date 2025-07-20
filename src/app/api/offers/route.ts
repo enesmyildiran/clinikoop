@@ -58,11 +58,15 @@ export async function GET(request: NextRequest) {
     const offers = await prisma.offer.findMany({
       where: whereClause,
       include: {
-        patient: {
-          select: {
-            id: true,
-            name: true,
-            isActive: true,
+        patientOffers: {
+          include: {
+            patient: {
+              select: {
+                id: true,
+                name: true,
+                isActive: true,
+              },
+            },
           },
         },
         status: {
@@ -149,7 +153,10 @@ export async function POST(req: NextRequest) {
 
     // Varsayılan durumu bul
     const defaultStatus = await prisma.offerStatus.findFirst({
-      where: { isDefault: true }
+      where: { 
+        clinicId: clinicId,
+        isDefault: true 
+      }
     });
 
     if (!defaultStatus) {
@@ -175,12 +182,20 @@ export async function POST(req: NextRequest) {
         description: body.treatmentDetails.map(t => t.treatmentName).join(', '),
         totalPrice: totalPrice,
         currency: currency,
-        statusId: defaultStatus.id, // Yeni durum sistemi
-        patientId: patient.id,
-        userId: user.id,
+        statusId: defaultStatus.id,
         clinicId: clinicId,
         createdById: user.id,
         validUntil: body.validUntil ? new Date(body.validUntil) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    // PatientOffer ilişkisini oluştur
+    await prisma.patientOffer.create({
+      data: {
+        patientId: patient.id,
+        offerId: offer.id,
+        assigned: true,
+        visible: true,
       },
     });
 
@@ -199,8 +214,7 @@ export async function POST(req: NextRequest) {
           quantity: treatmentDetail.selectedTeeth.length,
           offerId: offer.id,
           selectedTeeth: JSON.stringify(treatmentDetail.selectedTeeth),
-          estimatedDays: treatmentDetail.estimatedDays || 0,
-          estimatedHours: treatmentDetail.estimatedHours || 0,
+          estimatedDuration: treatmentDetail.estimatedDays || 0,
         },
       });
     }
@@ -209,6 +223,7 @@ export async function POST(req: NextRequest) {
     if (body.patientInfo.specialNotes) {
       await prisma.note.create({
         data: {
+          title: 'Özel Notlar',
           content: body.patientInfo.specialNotes,
           isPrivate: true,
           offerId: offer.id,
@@ -293,9 +308,8 @@ export async function DELETE(req: NextRequest) {
     where: { 
       id, 
       clinicId: clinicId,
-      isDeleted: false
     },
-    data: { isDeleted: true },
+    data: { isActive: false },
   });
   if (offer.count === 0) {
     return NextResponse.json({ error: 'Teklif bulunamadı' }, { status: 404 });

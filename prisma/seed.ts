@@ -100,6 +100,30 @@ async function main() {
     }
   }
 
+  // Teklif durumları
+  const offerStatuses = [
+    { name: 'DRAFT', displayName: 'Taslak', color: '#6B7280', order: 1, isDefault: true, clinicId: defaultClinic.id },
+    { name: 'SENT', displayName: 'Gönderildi', color: '#3B82F6', order: 2, isDefault: false, clinicId: defaultClinic.id },
+    { name: 'VIEWED', displayName: 'Görüntülendi', color: '#10B981', order: 3, isDefault: false, clinicId: defaultClinic.id },
+    { name: 'ACCEPTED', displayName: 'Kabul Edildi', color: '#059669', order: 4, isDefault: false, clinicId: defaultClinic.id },
+    { name: 'REJECTED', displayName: 'Reddedildi', color: '#EF4444', order: 5, isDefault: false, clinicId: defaultClinic.id }
+  ];
+
+  for (const offerStatus of offerStatuses) {
+    const existingOfferStatus = await prisma.offerStatus.findFirst({
+      where: { 
+        name: offerStatus.name,
+        clinicId: defaultClinic.id
+      }
+    });
+
+    if (!existingOfferStatus) {
+      await prisma.offerStatus.create({
+        data: offerStatus
+      });
+    }
+  }
+
   console.log('✅ Database seeded successfully!');
 }
 

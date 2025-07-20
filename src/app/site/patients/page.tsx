@@ -122,7 +122,7 @@ export default function PatientsPage() {
     try {
       const res = await fetch('/api/patients')
       const data = await res.json()
-      let filtered = data.patients
+      let filtered = data.patients || [] // Güvenli fallback
       if (q) {
         const qLower = q.toLowerCase()
         filtered = filtered.filter((p: any) =>
@@ -132,7 +132,8 @@ export default function PatientsPage() {
         )
       }
       setPatients(filtered)
-    } catch {
+    } catch (error) {
+      console.error('Error fetching patients:', error)
       setPatients([])
     }
     setLoading(false)

@@ -49,6 +49,7 @@ interface Offer {
   currency?: string
   title: string
   slug: string
+  patientOffers?: { patient: Patient }[]
 }
 
 interface Reminder {
@@ -415,7 +416,9 @@ export default function DashboardPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       {getStatusIcon(offer.status)}
-                      <div className="font-medium text-gray-800">{offer.patient?.name || '-'}</div>
+                      <div className="font-medium text-gray-800">
+                        {offer.patientOffers?.[0]?.patient?.name || offer.title || '-'}
+                      </div>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                       <div className="flex items-center gap-1">
@@ -430,15 +433,15 @@ export default function DashboardPage() {
                     </div>
                   </div>
                                      <div className="flex items-center gap-3">
-                     <div 
-                       className="text-xs px-3 py-1 rounded-full font-medium"
-                       style={{
-                         backgroundColor: `${offer.status.color}20`,
-                         color: offer.status.color
-                       }}
-                     >
-                       {offer.status.displayName}
-                     </div>
+                    <div 
+                      className="text-xs px-3 py-1 rounded-full font-medium"
+                      style={{
+                        backgroundColor: `${offer.status?.color || '#6B7280'}20`,
+                        color: offer.status?.color || '#6B7280'
+                      }}
+                    >
+                      {offer.status?.displayName || 'Taslak'}
+                    </div>
                     <div className="flex items-center gap-2">
                       <Link href={`/site/offers/${offer.id}`} className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
                         <FaEye />

@@ -134,6 +134,7 @@ model OfferStatus {
   color       String   @default("#6B7280")
   order       Int      @default(0)
   isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -173,6 +174,7 @@ model Offer {
   treatments        Treatment[]
   patientOffers     PatientOffer[]
   reminders         Reminder[]
+  notes             Note[]
 
   @@map("offers")
 }
@@ -198,6 +200,7 @@ model Treatment {
   name              String
   description       String?
   price             Float
+  quantity          Int      @default(1)
   currency          String   @default("TRY")
   category          String   @default("general")
   key               String?
@@ -228,6 +231,9 @@ model Note {
   
   userId      String
   user        ClinicUser @relation(fields: [userId], references: [id])
+
+  offerId     String?
+  offer       Offer? @relation(fields: [offerId], references: [id])
 
   @@map("notes")
 }

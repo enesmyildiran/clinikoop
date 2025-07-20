@@ -1,117 +1,179 @@
-# Clinikoop Projesi - Local ve Canlı Ortam Kurulum & Auth Ayarları
+# Clinikoop Subdomain - Multi-Tenant Platform
 
-## 1. Local Geliştirme Ortamı
+Bu proje, subdomain tabanlı multi-tenant routing kullanan bir Next.js uygulamasıdır. Her subdomain farklı bir kliniği temsil eder.
 
-### .env.local Örneği
+## 🚀 Özellikler
+
+- **Subdomain Tabanlı Routing**: Her subdomain farklı bir kliniği temsil eder
+- **Multi-Tenant**: Her klinik için ayrı içerik ve stil
+- **TypeScript**: Tam tip güvenliği
+- **Tailwind CSS**: Modern ve responsive tasarım
+- **Vercel Ready**: Doğrudan Vercel'de deploy edilebilir
+
+## 📋 Mevcut Subdomain'ler
+
+- `test1` - Test Klinik 1 (Mavi tema)
+- `test2` - Test Klinik 2 (Yeşil tema)
+- `test3` - Test Klinik 3 (Mor tema)
+- `default` - Bilinmeyen subdomain'ler için varsayılan
+
+## 🛠️ Teknoloji Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Deployment**: Vercel
+- **Middleware**: Next.js Middleware
+
+## 🚀 Kurulum
+
+```bash
+# Bağımlılıkları yükle
+npm install
+
+# Geliştirme sunucusunu başlat
+npm run dev
+
+# Production build
+npm run build
+
+# Production sunucusunu başlat
+npm start
 ```
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=local-secret
-COOKIE_SECURE=false
-DOMAIN=localhost
-DATABASE_URL="file:./prisma/dev.db"
+
+## 🌐 Subdomain Test Etme
+
+### Localhost'ta Test
+
+1. `/etc/hosts` dosyasını düzenleyin (macOS/Linux):
+```bash
+sudo nano /etc/hosts
 ```
 
-- **COOKIE_SECURE=false**: Localde HTTPS zorunlu değildir, cookie'ler güvenli olmayan şekilde çalışır.
-- **DOMAIN=localhost**: Localde domain/subdomain zorunlu değildir.
-- **NEXTAUTH_URL**: Localde http://localhost:3000 olmalı.
-
-### Localde Auth ve Login/Logout
-- Geliştirici/test için minimum güvenlik.
-- Giriş/çıkış işlemleri kolayca test edilebilir.
-- Subdomain, HTTPS, secure cookie gibi zorunluluklar yoktur.
-
-## 2. Canlı (Production) Ortam
-
-### .env.production Örneği
+2. Aşağıdaki satırları ekleyin:
 ```
-NEXTAUTH_URL=https://app.sizinproje.com
-NEXTAUTH_SECRET=canli-icin-gizli-bir-secret
-COOKIE_SECURE=true
-DOMAIN=sizinproje.com
-DATABASE_URL="file:./prisma/prod.db"
+127.0.0.1 test1.localhost
+127.0.0.1 test2.localhost
+127.0.0.1 test3.localhost
 ```
 
-- **COOKIE_SECURE=true**: Canlıda cookie'ler sadece HTTPS üzerinden, secure olarak çalışır.
-- **DOMAIN=sizinproje.com**: Canlıda domain/subdomain zorunludur (örn. app.sizinproje.com, klinik1.sizinproje.com).
-- **NEXTAUTH_URL**: Canlıda tam HTTPS URL olmalı.
-- **NEXTAUTH_SECRET**: Canlıda güçlü, benzersiz bir secret kullanılmalı.
+3. Tarayıcıda test edin:
+- http://test1.localhost:3000
+- http://test2.localhost:3000
+- http://test3.localhost:3000
 
-### Canlıya Geçişte Dikkat Edilecekler
-- **HTTPS zorunlu**: Tüm trafik HTTPS üzerinden olmalı.
-- **Secure Cookie**: `COOKIE_SECURE=true` olmalı.
-- **Doğru domain/subdomain**: .env'de DOMAIN doğru ayarlanmalı.
-- **Production secret**: NEXTAUTH_SECRET canlıya özel, güçlü ve kimseyle paylaşılmamalı.
-- **Veritabanı**: Canlıda ayrı bir prod.db veya production veritabanı kullanılmalı.
-- **.env dosyası**: Canlıya özel .env.production veya sunucu ortam değişkenleri kullanılmalı.
+### Production'ta Test
 
-### Kodda Koşullu Ayar Örneği
-```js
-const isProduction = process.env.NODE_ENV === 'production';
+Vercel'de deploy ettikten sonra:
+- https://test1.yourdomain.com
+- https://test2.yourdomain.com
+- https://test3.yourdomain.com
 
-cookie: {
-  secure: process.env.COOKIE_SECURE === 'true',
-  domain: isProduction ? process.env.DOMAIN : undefined,
-  sameSite: isProduction ? 'strict' : 'lax',
+## 📁 Proje Yapısı
+
+```
+src/
+├── app/
+│   ├── layout.tsx          # Ana layout
+│   ├── page.tsx           # Ana sayfa (subdomain'e göre içerik)
+│   └── globals.css        # Global stiller
+├── lib/
+│   └── clinics.ts         # Klinik verileri ve yardımcı fonksiyonlar
+└── middleware.ts          # Subdomain routing middleware
+```
+
+## 🔧 Middleware Çalışma Mantığı
+
+1. **Subdomain Tespiti**: Hostname'den subdomain çıkarılır
+2. **Query Param Ekleme**: `clinic` query parametresi eklenir
+3. **URL Rewrite**: URL yeniden yazılır ama kullanıcıya gösterilmez
+
+### Örnek:
+- **Gelen URL**: `test1.yourdomain.com`
+- **İşlenmiş URL**: `test1.yourdomain.com?clinic=test1`
+- **Kullanıcı Görünen URL**: `test1.yourdomain.com`
+
+## 🎨 Klinik Özelleştirme
+
+Her klinik için aşağıdaki özellikler tanımlanabilir:
+
+```typescript
+interface Clinic {
+  id: string
+  name: string
+  description: string
+  subdomain: string
+  primaryColor?: string
+  address?: string
+  phone?: string
+  email?: string
 }
 ```
 
-## 3. Yedekleme ve Geri Yükleme
-- Her büyük değişiklikten önce mutlaka veritabanı yedeği alın.
-- Yedekler `backups/` klasöründe saklanmalı.
-- Geri yükleme için ilgili .tar.gz dosyasını açıp `prisma/dev.db` dosyasını geri koyun.
+## 🚀 Vercel Deployment
 
-## 4. Canlıya Geçişte Test Edilmesi Gerekenler
-- Login/logout ve session yönetimi
-- Rol bazlı erişim kontrolleri (süper admin, klinik admin, kullanıcı)
-- Cookie ve session davranışı (secure, domain/subdomain, HTTPS)
-- Klinik oluşturma, kullanıcı atama, yetki işlemleri
-- Tüm kritik akışlar (hasta, teklif, not, randevu, vs.)
+1. **GitHub'a Push**: Projeyi GitHub'a yükleyin
+2. **Vercel'e Import**: Vercel dashboard'dan projeyi import edin
+3. **Domain Ayarları**: Custom domain ve subdomain'leri ayarlayın
+4. **Deploy**: Otomatik deploy başlayacak
 
-## 5. Ekstra Notlar
-- Localde ve canlıda farklı .env dosyaları kullanın, asla canlı secret'ı localde paylaşmayın.
-- Canlıya geçişten önce staging ortamında tam bir test yapın.
-- Her zaman yedek alın, değişiklikleri küçük adımlarla ve test ederek ilerleyin.
+### Vercel Domain Ayarları
 
----
+Vercel dashboard'da:
+1. **Settings** > **Domains**
+2. Ana domain'i ekleyin (örn: `yourdomain.com`)
+3. Subdomain'leri ekleyin:
+   - `test1.yourdomain.com`
+   - `test2.yourdomain.com`
+   - `test3.yourdomain.com`
 
-**Bu rehber, projenin hem localde hem canlıda güvenli ve sorunsuz çalışması için hazırlanmıştır. Her adımda sorunuz olursa ekibe veya teknik desteğe danışın.** 
+## 🔍 Debug ve Test
 
-## NextAuth.js Kurulumu ve Ortam Notları
+### Middleware Debug
 
-### Local Ortamda Çalıştırma
-- NextAuth.js localde kurulu ve `/login`, `/logout` sayfaları layout’suz olarak tasarlandı.
-- Cookie ve session ayarları localde `.env.local` dosyasında `NEXTAUTH_URL=http://localhost:3000` olarak ayarlanmalı.
-- Subdomain desteği localde test için hosts dosyası veya özel proxy gerekebilir.
+```typescript
+// middleware.ts'de debug log'ları ekleyin
+console.log('Hostname:', hostname)
+console.log('Subdomain:', extractedSubdomain)
+console.log('URL:', url.toString())
+```
 
-### Production (Canlı) Ortamda Dikkat Edilecekler
-- `NEXTAUTH_URL` canlı domain/subdomain’e göre ayarlanmalı (örn: `https://klinik1.seninprojen.com`).
-- `NEXTAUTH_SECRET` mutlaka güçlü bir şekilde tanımlanmalı.
-- Subdomain bazlı oturum için NextAuth.js config’inde `cookies.domain` ayarı kullanılmalı. Örnek:
-  ```js
-  cookies: {
-    sessionToken: {
-      name: `__Secure-next-auth.session-token`,
-      options: {
-        domain: ".seninprojen.com",
-        path: "/",
-        sameSite: "lax",
-        httpOnly: true,
-        secure: true,
-      },
-    },
-  }
-  ```
-- Canlıda HTTPS zorunlu, cookie ayarlarında `secure: true` olmalı.
-- Kullanıcı ekleme/davet işlemleri sadece süper admin panelinden yapılmalı.
-- Giriş ekranında klinik seçimi yok, subdomain üzerinden otomatik belirleniyor.
+### Klinik Verilerini Test Etme
 
-### Ekstra
-- Geliştirici, canlıya geçişte bu notları ve NextAuth.js dökümantasyonunu mutlaka gözden geçirmeli.
-- Ortam değişkenleri `.env.production` ve `.env.local` olarak ayrılmalı.
-- Herhangi bir auth veya cookie problemi yaşanırsa, domain ve subdomain ayarları ilk kontrol edilmesi gereken yerlerdir. 
+```typescript
+import { getClinicBySubdomain, getAllClinics } from '@/lib/clinics'
 
-## Klinik Kullanıcısı (ClinicUser) Otomatik Oluşturma Notu
+// Belirli bir subdomain için klinik bilgisi
+const clinic = getClinicBySubdomain('test1')
 
-Hatırlatma (reminder) oluşturulurken ilgili kliniğe bağlı bir ClinicUser yoksa, backend otomatik olarak `admin@clinikoop.com` mailiyle bir admin kullanıcı oluşturur ve hatırlatma bu kullanıcıya bağlanır.
+// Tüm klinikleri listele
+const allClinics = getAllClinics()
+```
 
-> **Not:** Bu geçici bir çözümdür, production ortamı için güvenli değildir. Gerçek ortamda kullanıcı yönetimi ve yetkilendirme mutlaka düzgün şekilde uygulanmalıdır. 
+## 📝 Geliştirme Notları
+
+### Yeni Subdomain Ekleme
+
+1. `src/lib/clinics.ts` dosyasına yeni klinik ekleyin
+2. Gerekirse middleware'i güncelleyin
+3. Test edin
+
+### Stil Özelleştirme
+
+Her klinik için farklı renkler ve stiller:
+- `primaryColor`: Ana tema rengi
+- Tailwind CSS ile responsive tasarım
+- CSS-in-JS ile dinamik stiller
+
+## 🐛 Bilinen Sorunlar
+
+- Localhost'ta subdomain test etmek için `/etc/hosts` düzenlemesi gerekli
+- Vercel'de custom domain ayarları manuel yapılmalı
+
+## 📞 Destek
+
+Sorunlar için GitHub Issues kullanın veya iletişime geçin.
+
+## 📄 Lisans
+
+MIT License 

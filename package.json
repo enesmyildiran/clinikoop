@@ -13,6 +13,7 @@
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "db:deploy": "prisma migrate deploy && prisma db seed",
     "setup:users": "node scripts/setup-users.js",
     "setup:super-admin": "node scripts/create-super-admin.js",
     "setup:standard-users": "node scripts/create-standard-users.js",

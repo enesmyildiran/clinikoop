@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Providers from './providers'
-import { ToastProvider } from '@/components/ui/Toast'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,11 +18,9 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={inter.className + ' overflow-x-hidden'}>
-        <ToastProvider>
-          <Providers>
-            {children}
-          </Providers>
-        </ToastProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )

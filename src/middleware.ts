@@ -1,36 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Admin route'ları için güvenlik kontrolü
-  if (pathname.startsWith('/admin')) {
-    // Admin login sayfasına erişime izin ver
-    if (pathname === '/admin-login') {
-      return NextResponse.next();
-    }
-
-    // JWT token'ı kontrol et
-    const token = await getToken({ 
-      req: request, 
-      secret: process.env.NEXTAUTH_SECRET 
-    });
-
-    // Token yoksa login'e yönlendir
-    if (!token) {
-      return NextResponse.redirect(new URL('/admin-login', request.url));
-    }
-
-    // Kullanıcının rolünü kontrol et
-    const userRole = (token as any)?.role;
-    if (!userRole || (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN')) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
+export function middleware(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl
+  const hostname = request.headers.get('host') || ''
+  
+  // Subdomain'i çıkar (örn: test1.localhost:3000 -> test1)
+  const subdomain = hostname.split('.')[0]
+  
+  // Localhost için özel kontrol
+  const isLocalhost = hostname.includes('localhost')
+  const extractedSubdomain = isLocalhost ? hostname.split('.')[0] : subdomain
+  
+  // Eğer subdomain zaten query param olarak varsa, değiştirme
+  if (searchParams.has('clinic')) {
+    return NextResponse.next()
   }
-
-  // Diğer isteklere izin ver
-  return NextResponse.next();
+  
+  // Yeni URL oluştur ve clinic query param'ını ekle
+  const url = request.nextUrl.clone()
+  url.searchParams.set('clinic', extractedSubdomain)
+  
+  return NextResponse.rewrite(url)
 }
 
 export const config = {
@@ -41,8 +31,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
-}; 
+} 

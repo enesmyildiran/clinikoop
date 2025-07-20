@@ -171,17 +171,57 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // patientId ve offerId boş string ise undefined yap
+    // patientId validasyonu - eğer geçerli bir hasta ID'si değilse undefined yap
+    let validPatientId = undefined;
+    if (patientId && patientId !== '') {
+      const patient = await prisma.patient.findFirst({
+        where: { 
+          id: patientId,
+          clinicId: clinicId,
+          isActive: true
+        }
+      });
+      if (patient) {
+        validPatientId = patientId;
+      }
+    }
+
+    // offerId validasyonu - eğer geçerli bir teklif ID'si değilse undefined yap
+    let validOfferId = undefined;
+    if (offerId && offerId !== '') {
+      const offer = await prisma.offer.findFirst({
+        where: { 
+          id: offerId,
+          clinicId: clinicId,
+          isActive: true
+        }
+      });
+      if (offer) {
+        validOfferId = offerId;
+      }
+    }
+
+    // priorityId validasyonu
+    let validPriorityId = null;
+    if (priority && priority !== '') {
+      const priorityRecord = await prisma.supportPriority.findFirst({
+        where: { id: priority }
+      });
+      if (priorityRecord) {
+        validPriorityId = priority;
+      }
+    }
+
     const data: any = {
       title,
       description,
       dueDate: parsedDueDate,
-      patientId: patientId && patientId !== '' ? patientId : undefined,
-      offerId: offerId && offerId !== '' ? offerId : undefined,
-      priorityId: priority && priority !== '' ? priority : null,
+      patientId: validPatientId,
+      offerId: validOfferId,
+      priorityId: validPriorityId,
       isPrivate: isPrivate || false,
       userId,
-      clinicId // ClinicId'yi ekle
+      clinicId
     };
 
     const reminder = await prisma.reminder.create({
