@@ -77,6 +77,14 @@ export function ReminderProvider({ children }: ReminderProviderProps) {
     setLoading(true)
     try {
       const response = await fetch('/api/reminders')
+      
+      // Authentication kontrolü
+      if (response.status === 401) {
+        // Kullanıcı giriş yapmamış, hatırlatmaları yükleme
+        setReminders([])
+        return
+      }
+      
       const data = await response.json()
       
       if (data.success) {
@@ -89,10 +97,8 @@ export function ReminderProvider({ children }: ReminderProviderProps) {
       }
     } catch (error) {
       console.error('Reminder refresh error:', error)
-      addToast({
-        message: 'Hatırlatmalar yüklenirken hata oluştu',
-        type: 'error'
-      })
+      // Hata durumunda sessizce devam et, toast gösterme
+      setReminders([])
     } finally {
       setLoading(false)
     }
@@ -205,7 +211,20 @@ export function ReminderProvider({ children }: ReminderProviderProps) {
 
   // İlk yükleme
   useEffect(() => {
-    refreshReminders()
+    // Sadece authenticated kullanıcılar için hatırlatmaları yükle
+    const checkAuthAndLoadReminders = async () => {
+      try {
+        const authResponse = await fetch('/api/auth/me')
+        if (authResponse.ok) {
+          refreshReminders()
+        }
+      } catch (error) {
+        // Authentication yok, hatırlatmaları yükleme
+        console.log('User not authenticated, skipping reminders')
+      }
+    }
+    
+    checkAuthAndLoadReminders()
   }, [])
 
   const value: ReminderContextType = {
