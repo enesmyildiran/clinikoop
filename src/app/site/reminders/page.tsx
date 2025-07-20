@@ -8,6 +8,7 @@ import { useReminders } from '@/contexts/ReminderContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
+import { PageContainer } from '@/components/ui/PageContainer'
 
 export default function RemindersPage() {
   const { reminders, pinnedReminders, loading, refreshReminders } = useReminders()
@@ -184,7 +185,7 @@ export default function RemindersPage() {
   const stats = getStatusStats()
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
+    <PageContainer>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
@@ -248,41 +249,42 @@ export default function RemindersPage() {
             <Button
               onClick={() => setShowFilters(!showFilters)}
               variant="outline"
-              size="sm"
+              className="flex items-center gap-2"
             >
-              <FaFilter className="mr-2" />
-              {showFilters ? 'Gizle' : 'Göster'}
+              <FaFilter />
+              {showFilters ? 'Filtreleri Gizle' : 'Filtreleri Göster'}
             </Button>
           </div>
         </div>
-        
+
         {showFilters && (
           <div className="p-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {/* Durum Filtresi */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Durum</label>
-                <Select value={statusFilter || "all"} onValueChange={(value) => handleFilterChange('status', value === "all" ? "" : value)}>
+                <Select value={statusFilter} onValueChange={(value) => handleFilterChange('status', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Tüm Durumlar" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tüm Durumlar</SelectItem>
+                    <SelectItem value="">Tüm Durumlar</SelectItem>
                     <SelectItem value="PENDING">Bekliyor</SelectItem>
                     <SelectItem value="DONE">Tamamlandı</SelectItem>
                     <SelectItem value="POSTPONED">Ertelendi</SelectItem>
-                    <SelectItem value="CLOSED_WITH_REASON">Kapatıldı</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
+              {/* Öncelik Filtresi */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Öncelik</label>
-                <Select value={priorityFilter || "all"} onValueChange={(value) => handleFilterChange('priority', value === "all" ? "" : value)}>
+                <Select value={priorityFilter} onValueChange={(value) => handleFilterChange('priority', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Tüm Öncelikler" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tüm Öncelikler</SelectItem>
+                    <SelectItem value="">Tüm Öncelikler</SelectItem>
                     <SelectItem value="URGENT">Acil</SelectItem>
                     <SelectItem value="HIGH">Yüksek</SelectItem>
                     <SelectItem value="MEDIUM">Orta</SelectItem>
@@ -290,15 +292,16 @@ export default function RemindersPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
+              {/* Tarih Filtresi */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tarih</label>
-                <Select value={dateFilter || "all"} onValueChange={(value) => handleFilterChange('date', value === "all" ? "" : value)}>
+                <Select value={dateFilter} onValueChange={(value) => handleFilterChange('date', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Tüm Tarihler" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tüm Tarihler</SelectItem>
+                    <SelectItem value="">Tüm Tarihler</SelectItem>
                     <SelectItem value="today">Bugün</SelectItem>
                     <SelectItem value="tomorrow">Yarın</SelectItem>
                     <SelectItem value="thisWeek">Bu Hafta</SelectItem>
@@ -306,43 +309,44 @@ export default function RemindersPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
+              {/* Sıralama */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sıralama</label>
                 <Select value={sortBy} onValueChange={(value) => handleFilterChange('sort', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Sıralama" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="dueDate">Tarih</SelectItem>
+                    <SelectItem value="dueDate">Vade Tarihi</SelectItem>
                     <SelectItem value="priority">Öncelik</SelectItem>
-                    <SelectItem value="createdAt">Oluşturma</SelectItem>
+                    <SelectItem value="createdAt">Oluşturulma</SelectItem>
                     <SelectItem value="title">Başlık</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700">Sıra:</label>
-                <Button
-                  onClick={() => handleFilterChange('order', sortOrder === 'asc' ? 'desc' : 'asc')}
-                  variant="outline"
-                  size="sm"
-                >
-                  <FaSort className="mr-1" />
-                  {sortOrder === 'asc' ? 'Artan' : 'Azalan'}
-                </Button>
+
+              {/* Sıralama Yönü */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Yön</label>
+                <Select value={sortOrder} onValueChange={(value) => handleFilterChange('order', value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="asc">Artan</SelectItem>
+                    <SelectItem value="desc">Azalan</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              
-              <Button
-                onClick={clearFilters}
-                variant="outline"
-                size="sm"
-                className="text-red-600 border-red-300 hover:bg-red-50"
-              >
+            </div>
+
+            <div className="flex justify-end">
+              <Button onClick={clearFilters} variant="outline" className="mr-2">
                 Filtreleri Temizle
+              </Button>
+              <Button onClick={updateURL}>
+                Filtreleri Uygula
               </Button>
             </div>
           </div>
@@ -377,55 +381,29 @@ export default function RemindersPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-600 mt-2">Hatırlatmalar yükleniyor...</p>
+            <p className="mt-2 text-gray-600">Hatırlatmalar yükleniyor...</p>
           </div>
         ) : filteredReminders.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl shadow-sm border">
-            <FaBell className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              {reminders.length === 0 ? 'Henüz hatırlatmanız yok!' : 'Filtrelere uygun hatırlatma bulunamadı'}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {reminders.length === 0 
-                ? 'İlk hatırlatmanızı oluşturarak başlayın'
-                : 'Filtrelerinizi değiştirerek daha fazla sonuç görebilirsiniz'
-              }
-            </p>
+          <div className="text-center py-12">
+            <FaBell className="text-gray-400 text-4xl mx-auto mb-4" />
+            <p className="text-gray-600">Henüz hatırlatma bulunmuyor</p>
             <Button 
               onClick={() => router.push('/site/reminders/new')}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="mt-4"
             >
-              <FaPlus className="mr-2" />
-              Yeni Hatırlatma Ekle
+              İlk Hatırlatmanızı Oluşturun
             </Button>
           </div>
         ) : (
-          <>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-gray-600">
-                {filteredReminders.length} hatırlatma gösteriliyor
-              </p>
-              <Button
-                onClick={refreshReminders}
-                variant="outline"
-                size="sm"
-              >
-                Yenile
-              </Button>
-            </div>
-            
-            <div className="grid gap-4">
-              {filteredReminders.map((reminder) => (
-                <ReminderCard
-                  key={reminder.id}
-                  reminder={reminder}
-                  showActions={true}
-                />
-              ))}
-            </div>
-          </>
+          filteredReminders.map((reminder) => (
+            <ReminderCard 
+              key={reminder.id} 
+              reminder={reminder} 
+              showActions={true}
+            />
+          ))
         )}
       </div>
-    </div>
+    </PageContainer>
   )
 } 

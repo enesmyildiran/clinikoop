@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { PageContainer } from '@/components/ui/PageContainer';
 
 interface Ticket {
   id: string;
@@ -38,7 +39,7 @@ export default function AdminSupportListPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8">
+    <PageContainer>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Tüm Destek Talepleri</h1>
       {loading ? (
         <div className="text-center py-12 text-gray-500">Yükleniyor...</div>
@@ -82,6 +83,6 @@ export default function AdminSupportListPage() {
           </table>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 } 

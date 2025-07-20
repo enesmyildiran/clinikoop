@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { PhoneInput } from '@/components/ui/PhoneInput'
+import { PageContainer } from '@/components/ui/PageContainer'
 import { useQuery } from '@tanstack/react-query'
 
 // Ülke kodundan ülke ismine mapping
@@ -560,7 +561,7 @@ export default function NewPatientPage() {
   )
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-8">
+    <PageContainer>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
@@ -618,6 +619,6 @@ export default function NewPatientPage() {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 } 

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { FaPlus, FaUser, FaEnvelope, FaShieldAlt, FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa'
+import { PageContainer } from '@/components/ui/PageContainer'
 
 const users = [
   { 
@@ -49,7 +50,7 @@ const roles = {
 
 export default function UsersPage() {
   return (
-    <div className="w-full">
+    <PageContainer>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Kullanıcı Yönetimi</h1>
         <Link href="/users/new" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors">
@@ -131,6 +132,6 @@ export default function UsersPage() {
           </table>
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 } 

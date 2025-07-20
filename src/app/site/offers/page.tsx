@@ -8,6 +8,7 @@ import PriceDisplay from '@/components/ui/PriceDisplay'
 import { CurrencyCode } from '@/lib/currency'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/Toast'
+import { PageContainer } from '@/components/ui/PageContainer'
 
 export default function OffersPage() {
   const [offers, setOffers] = useState<any[]>([])
@@ -205,7 +206,7 @@ export default function OffersPage() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-2 md:px-4 py-8">
+    <PageContainer>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Teklif Listesi</h1>
         <Link href="/site/offers/new" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors">
@@ -248,178 +249,143 @@ export default function OffersPage() {
             <option value="USD">USD</option>
             <option value="EUR">EUR</option>
           </select>
-          <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium flex items-center gap-2">
+          <button
+            type="submit"
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
             <FaSearch /> Ara
           </button>
         </div>
       </form>
 
-      <div className="bg-white rounded-xl shadow p-4">
-        {loading ? (
-          <div className="text-center text-gray-500 py-12">Yükleniyor...</div>
-        ) : offers.length === 0 ? (
-          <div className="text-center text-gray-500 py-12">Teklif bulunamadı.</div>
-        ) : (
-          <div className="divide-y divide-gray-200">
-            {offersByPatient.map(({ patient, offers }) => {
-              const patientId = patient?.id || 'deleted';
-              const isExpanded = expandedPatientIds.includes(patientId);
-              const totalAmountByCurrency: Record<string, number> = {};
-              offers.forEach((offer: any) => {
-                const currency = offer.currency || 'TRY';
-                totalAmountByCurrency[currency] = (totalAmountByCurrency[currency] || 0) + (offer.totalPrice || 0);
-              });
-              return (
-                <div key={patientId}>
-                  <button
-                    className="w-full flex items-center justify-between py-4 px-2 md:px-4 bg-gray-50 hover:bg-blue-50 rounded-lg transition group"
-                    onClick={() => togglePatientAccordion(patientId)}
-                  >
-                    <div className="flex items-center gap-3">
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Teklifler yükleniyor...</p>
+        </div>
+      ) : offersByPatient.length === 0 ? (
+        <div className="text-center py-12">
+          <FaFilePdf className="text-gray-400 text-4xl mx-auto mb-4" />
+          <p className="text-gray-600">Henüz teklif bulunmuyor</p>
+          <Link href="/site/offers/new" className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <FaPlus /> İlk Teklifinizi Oluşturun
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {offersByPatient.map(({ patient, offers: patientOffers }) => (
+            <div key={patient?.id || 'deleted'} className="bg-white rounded-xl shadow-sm border overflow-hidden">
+              {/* Hasta Başlığı */}
+              <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                       <FaUser className="text-blue-600" />
-                      <span className="font-semibold text-lg text-gray-800">
-                        {patient?.name || 'Bilinmeyen Hasta'}
-                      </span>
-                      {patient?.phone && (
-                        <span className="text-gray-500 text-sm ml-2">{patient.phone}</span>
-                      )}
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-gray-600 bg-blue-100 rounded px-2 py-1">
-                        {offers.length} teklif
-                      </span>
-                      <span className="text-sm text-gray-600 bg-green-100 rounded px-2 py-1">
-                        {Object.entries(totalAmountByCurrency).map(([cur, amt]) => `${amt.toLocaleString('tr-TR')} ${cur}`).join(' + ')}
-                      </span>
-                      <span className="ml-2">
-                        {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
-                      </span>
+                    <div>
+                      <h3 className="font-semibold text-gray-800">
+                        {patient?.name || 'Silinmiş Hasta'}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {patientOffers.length} teklif
+                      </p>
                     </div>
+                  </div>
+                  <button
+                    onClick={() => togglePatientAccordion(patient?.id || 'deleted')}
+                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    {expandedPatientIds.includes(patient?.id || 'deleted') ? (
+                      <FaChevronUp className="w-5 h-5" />
+                    ) : (
+                      <FaChevronDown className="w-5 h-5" />
+                    )}
                   </button>
-                  {isExpanded && (
-                    <div className="py-2 px-2 md:px-6">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teklif</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tutar</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksiyonlar</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {offers.map((offer) => (
-                            <tr key={offer.id} className="hover:bg-gray-50">
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{offer.title}</td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                <PriceDisplay amount={offer.totalPrice || 0} currency={offer.currency || 'TRY'} />
-                              </td>
-                              <td className="px-4 py-2 whitespace-nowrap">
-                                <select
-                                  value={offer.status?.id || ''}
-                                  onChange={async (e) => {
-                                    try {
-                                      const res = await fetch(`/api/offers/${offer.slug}`, {
-                                        method: 'PUT',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ statusId: e.target.value })
-                                      });
-                                      if (res.ok) {
-                                        addToast({ message: 'Statü başarıyla güncellendi!', type: 'success' });
-                                        // Teklifleri yeniden yükle
-                                        fetchOffers(search, statusFilter, currencyFilter);
-                                      } else {
-                                        addToast({ message: 'Statü güncellenirken hata oluştu', type: 'error' });
-                                      }
-                                    } catch (error) {
-                                      addToast({ message: 'Statü güncellenirken hata oluştu', type: 'error' });
-                                    }
-                                  }}
-                                  className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full shadow-sm cursor-pointer border-0 focus:ring-2 focus:ring-blue-500 ${getStatusColor(offer.status)}`}
-                                >
-                                  {statuses.map((status: any) => (
-                                    <option key={status.id} value={status.id} className="bg-white text-gray-900">
-                                      {status.displayName}
-                                    </option>
-                                  ))}
-                                </select>
-                              </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                                {new Date(offer.createdAt).toLocaleDateString('tr-TR')}
-                              </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">
-                                <div className="flex items-center gap-3">
-                                  <Link 
-                                    href={`/site/offer/${offer.slug}`}
-                                    className="text-blue-600 hover:text-blue-800"
-                                    title="Görüntüle"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <FaEye />
-                                  </Link>
-                                  <Link
-                                    href={`/site/offers/${offer.slug}/edit`}
-                                    className="text-yellow-600 hover:text-yellow-800"
-                                    title="Düzenle"
-                                  >
-                                    <FaEdit />
-                                  </Link>
-                                  <button 
-                                    onClick={() => copyLink(offer.slug)}
-                                    className="text-green-600 hover:text-green-800"
-                                    title="Link Kopyala"
-                                    type="button"
-                                  >
-                                    <FaLink />
-                                  </button>
-                                  <button
-                                    onClick={() => handleCreateReminder(offer.id, offer.title, patient?.name || 'Bilinmeyen Hasta')}
-                                    className="text-purple-600 hover:text-purple-800"
-                                    title="Hatırlatma Oluştur"
-                                    type="button"
-                                  >
-                                    <FaBell />
-                                  </button>
-                                  <button 
-                                    onClick={() => openDeleteDialog(offer.id)}
-                                    className="text-red-600 hover:text-red-800"
-                                    title="Sil"
-                                    type="button"
-                                  >
-                                    <FaTrash />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </div>
 
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        isOpen={showDeleteDialog}
-        onClose={() => {
-          setShowDeleteDialog(false)
-          setOfferToDelete(null)
-        }}
-        onConfirm={handleDelete}
-        title="Teklifi Sil"
-        message="Bu teklifi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
-        confirmText="Evet, Sil"
-        cancelText="İptal"
-        type="danger"
-        isLoading={isDeleting}
-      />
-    </div>
+              {/* Teklifler */}
+              {expandedPatientIds.includes(patient?.id || 'deleted') && (
+                <div className="divide-y divide-gray-200">
+                  {patientOffers.map((offer) => (
+                    <div key={offer.id} className="px-6 py-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="font-medium text-gray-800">{offer.title}</h4>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(offer.status)}`}>
+                              {getStatusText(offer.status)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <span>
+                              <PriceDisplay 
+                                amount={offer.totalAmount} 
+                                currency={offer.currency as CurrencyCode} 
+                              />
+                            </span>
+                            <span>Oluşturulma: {new Date(offer.createdAt).toLocaleDateString('tr-TR')}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/offer/${offer.slug}`}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Görüntüle"
+                          >
+                            <FaEye className="w-4 h-4" />
+                          </Link>
+                          <Link
+                            href={`/site/offers/${offer.id}/edit`}
+                            className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                            title="Düzenle"
+                          >
+                            <FaEdit className="w-4 h-4" />
+                          </Link>
+                          <button
+                            onClick={() => copyLink(offer.slug)}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Link Kopyala"
+                          >
+                            <FaLink className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleCreateReminder(offer.id, offer.title, patient?.name || '')}
+                            className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                            title="Hatırlatma Oluştur"
+                          >
+                            <FaBell className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => openDeleteDialog(offer.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Sil"
+                          >
+                            <FaTrash className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Silme Onay Dialog */}
+              <ConfirmDialog
+          isOpen={showDeleteDialog}
+          onClose={() => setShowDeleteDialog(false)}
+          onConfirm={handleDelete}
+          title="Teklifi Sil"
+          message="Bu teklifi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+          confirmText="Sil"
+          cancelText="İptal"
+          isLoading={isDeleting}
+          type="danger"
+        />
+    </PageContainer>
   )
 } 

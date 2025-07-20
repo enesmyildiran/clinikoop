@@ -12,10 +12,16 @@ const adminMenu = [
       { href: '/admin/clinics', icon: FaHospital, label: 'Klinik Yönetimi' },
       { href: '/admin/users', icon: FaUsers, label: 'Kullanıcı Yönetimi' },
       { href: '/admin/settings', icon: FaCog, label: 'Sistem Ayarları' },
+      { href: '/admin/module-settings', icon: FaCog, label: 'Modül Ayarları' },
       { href: '/admin/pdf-templates', icon: FaFilePdf, label: 'PDF Şablonları' },
       { href: '/admin/backup', icon: FaDatabase, label: 'Yedekleme' },
       { href: '/admin/logs', icon: FaBug, label: 'Loglar' },
       { href: '/admin/analytics', icon: FaChartPie, label: 'Analizler' },
+    ]
+  },
+  {
+    title: 'Destek Sistemi',
+    items: [
       { href: '/admin/support', icon: FaHeadset, label: 'Destek Talepleri' },
     ]
   }

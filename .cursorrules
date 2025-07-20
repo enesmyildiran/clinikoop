@@ -1,49 +1,163 @@
-{
-  "description": "Clinikoop, diş kliniklerinin hasta teklif süreçlerini yönetmesine odaklanan, link tabanlı hasta erişimi sunan, PDF üretimi destekleyen tek-klinik yapılı bir SaaS platformudur. Bu rules dosyası, Cursor AI'nın projeye özel kod üretmesini sağlar.",
-  "rules": [
-    {
-      "trigger": "project_start",
-      "action": "Use Next.js App Router with TypeScript, Tailwind CSS for styling, Prisma ORM for database (PostgreSQL). Focus on performance, simplicity, and maintainable code."
-    },
-    {
-      "trigger": "file_structure",
-      "action": "Organize files in app/, components/, lib/, prisma/, and types/. Use descriptive folder names. Pages must follow the new App Router layout."
-    },
-    {
-      "trigger": "ui_design",
-      "action": "Design all pages to be fully responsive for mobile, tablet, desktop, and large screens (TV). Use Tailwind utility classes. Prioritize whitespace, clarity, and rounded UI with soft shadows."
-    },
-    {
-      "trigger": "pdf_handling",
-      "action": "Use html2pdf.js or react-pdf to generate PDF offers. Admin should be able to customize header, logo, colors, and layout. Output must support images and long text."
-    },
-    {
-      "trigger": "roles_and_auth",
-      "action": "There is no login for patients. Patients access offers via secure tokenized link and must verify with a secondary identifier (e.g. last 4 digits of phone). Admin and Sales roles have full login via NextAuth or Clerk."
-    },
-    {
-      "trigger": "data_modeling",
-      "action": "Create and maintain Prisma models for User, Patient, Offer, Reminder, and Setting. Every model must include createdAt and updatedAt fields. Use soft delete where needed."
-    },
-    {
-      "trigger": "component_creation",
-      "action": "Write all components as functional components using arrow functions. Use PascalCase for component names. Reuse UI components where possible. Keep logic separate from UI where applicable."
-    },
-    {
-      "trigger": "api_routes",
-      "action": "Define all backend logic under app/api/ using route handlers. Validate inputs and return JSON responses. Avoid cluttering UI files with business logic."
-    },
-    {
-      "trigger": "offer_page",
-      "action": "Offer pages must be accessible via slug (e.g., /offer/[slug]). No login is required. Include patient name, treatment plan, price, images, and download PDF button."
-    },
-    {
-      "trigger": "reminders_and_notes",
-      "action": "Allow users to create personal or team-visible reminders. Notes can be attached to offers. Only visible to internal users. No chat system exists."
-    },
-    {
-      "trigger": "language_and_docs",
-      "action": "All code comments, variable names, and documentation must be written in English. Prefer simple and meaningful names."
-    }
-  ]
-}
+# Clinikoop - Vercel Production Deployment Rules
+
+## 🚀 Proje Yapısı
+Clinikoop, diş kliniklerinin hasta teklif süreçlerini yönetmesine odaklanan, link tabanlı hasta erişimi sunan, PDF üretimi destekleyen tek-klinik yapılı bir SaaS platformudur.
+
+## 🗄️ Database Stratejisi
+- **Local Development**: PostgreSQL (Docker veya local PostgreSQL)
+- **Production (Vercel)**: PostgreSQL (Prisma Data Platform)
+- **ASLA SQLite kullanma** - Sadece PostgreSQL kullan
+
+## 🔧 Teknoloji Stack
+- **Framework**: Next.js 14 App Router with TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL + Prisma ORM
+- **Authentication**: NextAuth.js
+- **Deployment**: Vercel
+- **PDF Generation**: html2pdf.js / react-pdf
+
+## 📁 Dosya Organizasyonu
+```
+src/
+├── app/           # Next.js App Router pages
+├── components/    # Reusable UI components
+├── lib/          # Utilities, database, auth
+├── hooks/        # Custom React hooks
+├── types/        # TypeScript type definitions
+└── contexts/     # React contexts
+```
+
+## 🎨 UI/UX Prensipleri
+- **Responsive Design**: Mobile-first, tüm ekran boyutları için optimize
+- **Modern UI**: Rounded corners, soft shadows, clean whitespace
+- **Accessibility**: WCAG standartlarına uygun
+- **Performance**: Lazy loading, image optimization
+
+## 🔐 Authentication & Authorization
+- **Patient Access**: Tokenized links, no login required
+- **Admin/Sales**: Full NextAuth.js login system
+- **Role-based Access**: SUPER_ADMIN, ADMIN, USER
+- **Multi-tenant**: Clinic-based isolation
+
+## 📊 Database Models (Prisma)
+```prisma
+// Ana modeller
+- Clinic (Multi-tenant ana model)
+- ClinicUser (Klinik kullanıcıları)
+- Patient (Hastalar)
+- Offer (Teklifler)
+- Treatment (Tedaviler)
+- Reminder (Hatırlatmalar)
+- SupportTicket (Destek talepleri)
+```
+
+## 🚀 Vercel Deployment Rules
+
+### Environment Variables (ZORUNLU)
+```env
+# Database (PostgreSQL - Prisma Data Platform)
+DATABASE_URL="postgres://..."
+
+# Authentication
+NEXTAUTH_URL="https://your-domain.vercel.app"
+NEXTAUTH_SECRET="your-secret-key"
+
+# Production Settings
+NODE_ENV="production"
+```
+
+### Build Configuration
+- **Build Command**: `npm run build` (Prisma generate otomatik)
+- **Output**: Standalone mode
+- **Regions**: iad1 (US East)
+- **Functions**: 30s max duration
+
+### Database Migration
+```bash
+# Production migration
+npx prisma migrate deploy
+npx prisma db seed
+```
+
+## 📋 Development Rules
+
+### Component Creation
+- **Functional Components**: Arrow functions kullan
+- **PascalCase**: Component isimleri
+- **TypeScript**: Strict mode, proper typing
+- **Props Interface**: Her component için interface tanımla
+
+### API Routes
+- **Location**: `src/app/api/`
+- **Response Format**: JSON
+- **Error Handling**: Try-catch, proper HTTP status codes
+- **Validation**: Zod schema validation
+
+### Database Operations
+- **Prisma Client**: Singleton pattern
+- **Transactions**: Complex operations için
+- **Error Handling**: Proper error messages
+- **Soft Delete**: Where applicable
+
+## 🔒 Security Rules
+- **Environment Variables**: Never commit to git
+- **HTTPS Only**: Production'da zorunlu
+- **Input Validation**: All user inputs
+- **SQL Injection**: Prisma ORM kullan (raw SQL yok)
+- **XSS Protection**: Sanitize user inputs
+
+## 📈 Performance Rules
+- **Image Optimization**: Next.js Image component
+- **Code Splitting**: Dynamic imports
+- **Caching**: API responses, static assets
+- **Bundle Size**: Monitor and optimize
+
+## 🧪 Testing Rules
+- **Unit Tests**: Critical business logic
+- **Integration Tests**: API endpoints
+- **E2E Tests**: Critical user flows
+- **Error Monitoring**: Vercel Analytics
+
+## 📝 Code Quality Rules
+- **ESLint**: Strict configuration
+- **Prettier**: Consistent formatting
+- **TypeScript**: Strict mode
+- **Comments**: English only
+- **Git Commits**: Conventional commits
+
+## 🚫 Yasaklı İşlemler
+- ❌ SQLite kullanımı (sadece PostgreSQL)
+- ❌ Raw SQL queries (Prisma ORM kullan)
+- ❌ Client-side database operations
+- ❌ Hardcoded secrets
+- ❌ Console.log in production
+- ❌ Inline styles (Tailwind kullan)
+
+## ✅ Zorunlu İşlemler
+- ✅ Environment variables validation
+- ✅ Error boundaries
+- ✅ Loading states
+- ✅ Proper TypeScript types
+- ✅ Responsive design
+- ✅ Accessibility attributes
+- ✅ SEO meta tags
+
+## 🔄 Deployment Checklist
+- [ ] Environment variables set
+- [ ] Database migration completed
+- [ ] Seed data loaded
+- [ ] Build successful
+- [ ] All tests passing
+- [ ] Performance optimized
+- [ ] Security headers set
+- [ ] Monitoring configured
+
+## 📞 Emergency Procedures
+1. **Database Issues**: Check Prisma Data Platform
+2. **Build Failures**: Check environment variables
+3. **Performance Issues**: Check Vercel Analytics
+4. **Security Issues**: Rotate secrets immediately
+
+---
+
+**Bu kurallar, projenin Vercel'de sorunsuz çalışması ve maintainable kod yazılması için tasarlanmıştır.**

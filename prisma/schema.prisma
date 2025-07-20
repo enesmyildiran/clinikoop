@@ -2,101 +2,63 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "darwin-arm64"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("STORAGE_POSTGRES_URL")
+  url      = env("DATABASE_URL")
 }
 
-// ===== CLINIC MODELS =====
-
 model Clinic {
-  id          String   @id @default(cuid())
-  name        String
-  subdomain   String   @unique
-  domain      String?
-  isActive    Boolean  @default(true)
-  maxUsers    Int      @default(5)
-  maxPatients Int      @default(100)
-  maxOffers   Int      @default(500)
-  
-  // Abonelik bilgileri
-  subscriptionStartDate DateTime? // Abonelik başlangıç tarihi
-  subscriptionEndDate   DateTime? // Abonelik bitiş tarihi
-  subscriptionStatus    String    @default("TRIAL") // TRIAL, ACTIVE, EXPIRED, CANCELLED
-  packageId             String?   // ClinicPackage ile ilişki
-  package               ClinicPackage? @relation(fields: [packageId], references: [id])
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  name                  String
+  subdomain             String   @unique
+  domain                String?
+  isActive              Boolean  @default(true)
+  maxUsers              Int      @default(10)
+  maxPatients           Int      @default(1000)
+  maxOffers             Int      @default(5000)
+  subscriptionStartDate DateTime?
+  subscriptionEndDate   DateTime?
+  subscriptionStatus    String   @default("TRIAL")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  // İlişkiler
-  users       ClinicUser[]
-  patients    Patient[]
-  offers      Offer[]
-  settings    ClinicSetting[]
-  notes       Note[]
-  offerStatuses OfferStatus[]
-  activityLogs ActivityLog[]
-  analyticsEvents AnalyticsEvent[]
-  appointments Appointment[]
-  reminders   Reminder[]
-  supportTickets SupportTicket[]
-  systemLogs    SystemLog[]
+  users                 ClinicUser[]
+  patients              Patient[]
+  offers                Offer[]
+  reminders             Reminder[]
+  notes                 Note[]
+  settings              ClinicSetting[]
+  tickets               SupportTicket[]
+  offerStatuses         OfferStatus[]
 
   @@map("clinics")
 }
 
-model ClinicPackage {
-  id          String   @id @default(cuid())
-  name        String
-  features    String   // JSON string
-  price       Float
-  currency    String   @default("TRY")
-  duration    Int      // Gün cinsinden
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // İlişkiler
-  clinics     Clinic[]
-
-  @@map("clinic_packages")
-}
-
 model ClinicUser {
   id          String   @id @default(cuid())
-  email       String
+  email       String   @unique
   name        String
-  role        String   @default("USER") // ADMIN, SALES, DOCTOR, USER
+  role        String   @default("USER")
   password    String
   isActive    Boolean  @default(true)
-  permissions String?  // JSON string
+  permissions String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   clinicId    String
   clinic      Clinic   @relation(fields: [clinicId], references: [id])
 
-  // İlişkiler
+  patients    Patient[]
   offers      Offer[]
   reminders   Reminder[]
   notes       Note[]
-  appointments Appointment[]
-  doctorSchedules DoctorSchedule[]
-  doctorTimeOffs DoctorTimeOff[]
-  activityLogs ActivityLog[]
-  analyticsEvents AnalyticsEvent[]
-  createdPatients Patient[] @relation("PatientCreatedBy")
-  createdOffers Offer[] @relation("OfferCreatedBy")
-  supportTickets SupportTicket[]
-  supportMessages SupportMessage[]
+  tickets     SupportTicket[]
+  messages    SupportMessage[]
   createdTickets SupportTicket[] @relation("TicketCreatedBy")
   assignedTickets SupportTicket[] @relation("TicketAssignedTo")
-  systemLogs      SystemLog[]
 
   @@map("clinic_users")
 }
@@ -105,85 +67,72 @@ model ClinicSetting {
   id        String   @id @default(cuid())
   key       String
   value     String
-  clinicId  String
+  category  String   @default("general")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  clinicId  String
   clinic    Clinic   @relation(fields: [clinicId], references: [id])
 
   @@unique([clinicId, key])
   @@map("clinic_settings")
 }
 
-// ===== SUPER ADMIN MODELS =====
-
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
-  role      String   @default("SUPER_ADMIN") // SUPER_ADMIN, ADMIN
-  password  String
+  role      String   @default("USER")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
 }
 
-// ===== CLINIC DATA MODELS =====
-
 model Patient {
-  id            String   @id @default(cuid())
-  name          String
-  firstName     String?
-  lastName      String?
-  gender        String?
-  city          String?
-  emergencyContact String?
-  emergencyPhone String?
-  insurance     String?
-  insuranceNumber String?
-  isActive      Boolean  @default(true)
-  email         String?
-  phone         String
-  birthDate     DateTime?
-  address       String?
-  notes         String?
-  instagram     String?
-  facebook      String?
-  whatsapp      String?
-  medicalHistory String?
-  allergies     String?
-  salesRepId    String?  // Satış temsilcisi ID'si
-  referralSourceId String? // Referans kaynağı ID'si
-  referralSource   ReferralSource? @relation(fields: [referralSourceId], references: [id])
-  country       String?  // İkamet edilen ülke kodu (örn: 'DE', 'TR')
-  phoneCountry  String?  // Telefon ülke kodu (örn: 'TR', 'DE')
-  nationality   String?  // Vatandaşlık ülke kodu (örn: 'TR', 'DE')
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  isDeleted     Boolean  @default(false)
+  id                String   @id @default(cuid())
+  name              String
+  email             String?
+  phone             String?
+  birthDate         DateTime?
+  gender            String?
+  address           String?
+  city              String?
+  country           String   @default("TR")
+  nationality       String   @default("TR")
+  phoneCountry      String   @default("+90")
+  notes             String?
+  isActive          Boolean  @default(true)
+  isDeleted         Boolean  @default(false)
+  referralSourceId  String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  clinicId      String
-  clinic        Clinic   @relation(fields: [clinicId], references: [id])
+  medicalHistory    String?
+  allergies         String?
+  medications       String?
+  emergencyContact  String?
 
-  offers        Offer[]
-  reminders     Reminder[]
-  appointments  Appointment[]
+  clinicId          String
+  clinic            Clinic   @relation(fields: [clinicId], references: [id])
   
-  // Oluşturan kullanıcı
-  createdById String?
-  createdBy   ClinicUser? @relation("PatientCreatedBy", fields: [createdById], references: [id])
+  createdById       String?
+  createdBy         ClinicUser? @relation(fields: [createdById], references: [id])
+
+  offers            PatientOffer[]
+  reminders         Reminder[]
+
+  referralSource    ReferralSource? @relation(fields: [referralSourceId], references: [id])
 
   @@map("patients")
 }
 
 model OfferStatus {
   id          String   @id @default(cuid())
-  name        String
+  name        String   @unique
   displayName String
-  color       String   @default("#6B7280") // Hex color code
-  order       Int      @default(0) // Pipeline sırası
-  isDefault   Boolean  @default(false) // Varsayılan durum
+  color       String   @default("#6B7280")
+  order       Int      @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -193,85 +142,92 @@ model OfferStatus {
 
   offers      Offer[]
 
-  @@unique([name, clinicId]) // Aynı isim farklı kliniklerde olabilir
   @@map("offer_statuses")
 }
 
 model Offer {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  description String?
-  totalPrice  Float
-  currency    String   @default("TRY")
-  statusId    String   // OfferStatus ile ilişki
-  status      OfferStatus @relation(fields: [statusId], references: [id])
-  validUntil  DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  isDeleted   Boolean  @default(false)
+  id                String   @id @default(cuid())
+  title             String
+  description       String?
+  totalPrice        Float
+  currency          String   @default("TRY")
+  statusString      String   @default("DRAFT")
+  validUntil        DateTime?
+  isActive          Boolean  @default(true)
+  isDeleted         Boolean  @default(false)
+  slug              String   @unique
+  pdfTemplateId     String?
+  estimatedDuration Int?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  // Tedavi süresi
-  estimatedDays  Int @default(0) // Estimated treatment duration (days)
-  estimatedHours Int @default(0) // Estimated treatment duration (hours)
+  clinicId          String
+  clinic            Clinic   @relation(fields: [clinicId], references: [id])
+  
+  createdById       String?
+  createdBy         ClinicUser? @relation(fields: [createdById], references: [id])
 
-  clinicId    String
-  clinic      Clinic   @relation(fields: [clinicId], references: [id])
+  statusId          String?
+  status            OfferStatus? @relation(fields: [statusId], references: [id])
 
-  patientId String
-  patient   Patient @relation(fields: [patientId], references: [id])
-
-  userId String
-  user   ClinicUser @relation(fields: [userId], references: [id])
-
-  // Oluşturan kullanıcı
-  createdById String?
-  createdBy   ClinicUser? @relation("OfferCreatedBy", fields: [createdById], references: [id])
-
-  treatments Treatment[]
-  notes      Note[]
-  reminders  Reminder[]
-  appointments Appointment[]
+  treatments        Treatment[]
+  patientOffers     PatientOffer[]
+  reminders         Reminder[]
 
   @@map("offers")
 }
 
-model Treatment {
-  id          String   @id @default(cuid())
-  name        String
-  key         String?
-  category    String?
-  currency    String   @default("TRY")
-  description String?
-  price       Float
-  quantity    Int      @default(1)
-  selectedTeeth String? // JSON array olarak diş numaraları
-  estimatedDays  Int @default(0) // Tahmini gün
-  estimatedHours Int @default(0) // Tahmini saat
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model PatientOffer {
+  id        String   @id @default(cuid())
+  patientId String
+  offerId   String
+  assigned  Boolean  @default(false)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  offerId String
-  offer   Offer @relation(fields: [offerId], references: [id])
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  offer     Offer    @relation(fields: [offerId], references: [id])
+
+  @@unique([patientId, offerId])
+  @@map("patient_offers")
+}
+
+model Treatment {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  price             Float
+  currency          String   @default("TRY")
+  category          String   @default("general")
+  key               String?
+  selectedTeeth     String?
+  estimatedDuration Int?
+  order             Int      @default(0)
+  isActive          Boolean  @default(true)
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  offerId           String
+  offer             Offer    @relation(fields: [offerId], references: [id])
 
   @@map("treatments")
 }
 
 model Note {
-  id        String   @id @default(cuid())
-  content   String
-  isPrivate Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  isPrivate   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  offerId String
-  offer   Offer @relation(fields: [offerId], references: [id])
-
-  userId String
-  user   ClinicUser @relation(fields: [userId], references: [id])
-
-  clinicId String
-  clinic   Clinic @relation(fields: [clinicId], references: [id])
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
+  
+  userId      String
+  user        ClinicUser @relation(fields: [userId], references: [id])
 
   @@map("notes")
 }
@@ -281,12 +237,12 @@ model Reminder {
   title       String
   description String?
   dueDate     DateTime
-  status      String   @default("PENDING") // PENDING, DONE, POSTPONED, CLOSED_WITH_REASON
-  reason      String?  // Kapatma sebebi
+  status      String   @default("PENDING")
+  reason      String?
   priorityId  String?
   priority    SupportPriority? @relation(fields: [priorityId], references: [id])
   isPrivate   Boolean  @default(false)
-  isPinned    Boolean  @default(false) // Sabitleme durumu
+  isPinned    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -315,67 +271,13 @@ model Setting {
   @@map("settings")
 }
 
-model PdfTemplate {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  category    String   @default("standard")
-  version     String   @default("1.0.0")
-  author      String?
-  content     String   // JSON string olarak saklanacak
-  isDefault   Boolean  @default(false)
-  isFixed     Boolean  @default(false)
-  isPublic    Boolean  @default(true)
-  tags        String   @default("[]") // JSON array string
-  metadata    String   @default("{}") // JSON object string
-  settings    String   @default("{}") // JSON object string
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // İlişkiler
-  versions    TemplateVersion[]
-  usages      TemplateUsage[]
-
-  @@map("pdf_templates")
-}
-
-model TemplateVersion {
-  id          String   @id @default(cuid())
-  templateId  String
-  version     String
-  changes     String   @default("[]") // JSON array string
-  createdAt   DateTime @default(now())
-  createdBy   String
-  isActive    Boolean  @default(false)
-  
-  // İlişkiler
-  template    PdfTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-
-  @@map("template_versions")
-}
-
-model TemplateUsage {
-  id           String   @id @default(cuid())
-  templateId   String
-  userId       String?
-  offerId      String?
-  usedAt       DateTime @default(now())
-  success      Boolean  @default(true)
-  errorMessage String?
-  
-  // İlişkiler
-  template     PdfTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-
-  @@map("template_usages")
-}
-
 model ReferralSource {
   id          String   @id @default(cuid())
   name        String   @unique
   displayName String
   description String?
-  color       String   @default("#6B7280") // Hex color code
-  order       Int      @default(0) // Sıralama
+  color       String   @default("#6B7280")
+  order       Int      @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -384,118 +286,6 @@ model ReferralSource {
 
   @@map("referral_sources")
 }
-
-// ===== DOKTOR TAKVİMİ MODELLERİ =====
-
-model Appointment {
-  id                String   @id @default(cuid())
-  patientId         String
-  patient           Patient  @relation(fields: [patientId], references: [id])
-  
-  doctorId          String
-  doctor            ClinicUser     @relation(fields: [doctorId], references: [id])
-  
-  clinicId          String
-  clinic            Clinic         @relation(fields: [clinicId], references: [id])
-  
-  startTime         DateTime
-  endTime           DateTime
-  durationMinutes   Int      @default(30)
-  
-  appointmentType   String   @default("MUAYENE") // MUAYENE, DOLGU, KANAL_TEDAVISI, KONTROL, vb.
-  status            String   @default("BEKLEMEDE") // BEKLEMEDE, ONAYLANDI, TAMAMLANDI, IPTAL_EDILDI, GELMEDI
-  
-  notes             String?
-  isBlockage        Boolean  @default(false) // Doktorun müsait olmadığı blokaj mı?
-  
-  relatedOfferId    String?  // Onaylanmış tekliften gelen randevu
-  relatedOffer      Offer?   @relation(fields: [relatedOfferId], references: [id])
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  @@map("appointments")
-}
-
-model DoctorSchedule {
-  id              String   @id @default(cuid())
-  doctorId        String
-  doctor          ClinicUser @relation(fields: [doctorId], references: [id])
-  
-  dayOfWeek       Int      // 0=Pazar, 1=Pazartesi, ..., 6=Cumartesi
-  startTime       String   // "09:00" formatında
-  endTime         String   // "17:00" formatında
-  
-  breakStartTime  String?  // "12:00" formatında
-  breakEndTime    String?  // "13:00" formatında
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@map("doctor_schedules")
-}
-
-model DoctorTimeOff {
-  id              String   @id @default(cuid())
-  doctorId        String
-  doctor          ClinicUser @relation(fields: [doctorId], references: [id])
-  
-  startDateTime   DateTime
-  endDateTime     DateTime
-  reason          String   // "TATIL", "KONGRE", "AMELIYAT", "OZEL_RANDEVU", vb.
-  isRecurring     Boolean  @default(false) // Tekrar eden blokaj mı?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@map("doctor_time_offs")
-} 
-
-// ===== ANALYTICS & LOGGING MODELS =====
-
-model ActivityLog {
-  id          String   @id @default(cuid())
-  action      String   // Örn: "CREATE", "UPDATE", "DELETE", "LOGIN"
-  description String?  // Detaylı açıklama
-  entityType  String?  // Örn: "OFFER", "PATIENT", "USER"
-  entityId    String?  // İlgili entity'nin ID'si
-  metadata    String?  // JSON string olarak ek veriler
-  ipAddress   String?  // IP adresi
-  userAgent   String?  // User agent bilgisi
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // İlişkiler
-  userId      String?
-  user        ClinicUser? @relation(fields: [userId], references: [id])
-  
-  clinicId    String?
-  clinic      Clinic? @relation(fields: [clinicId], references: [id])
-
-  @@map("activity_logs")
-}
-
-model AnalyticsEvent {
-  id          String   @id @default(cuid())
-  eventType   String   // Örn: "PAGE_VIEW", "BUTTON_CLICK", "FORM_SUBMIT"
-  eventName   String?  // Event adı
-  eventData   String?  // JSON string olarak event verileri
-  properties  String?  // JSON string olarak özellikler
-  sessionId   String?  // Session ID
-  timestamp   DateTime @default(now())
-  
-  // İlişkiler
-  userId      String?
-  user        ClinicUser? @relation(fields: [userId], references: [id])
-  
-  clinicId    String?
-  clinic      Clinic? @relation(fields: [clinicId], references: [id])
-
-  @@map("analytics_events")
-}
-
-// ===== SUPPORT SYSTEM MODELS =====
 
 model SupportCategory {
   id          String   @id @default(cuid())
@@ -507,7 +297,6 @@ model SupportCategory {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // İlişkiler
   tickets     SupportTicket[]
 
   @@map("support_categories")
@@ -515,11 +304,11 @@ model SupportCategory {
 
 model SupportTicket {
   id          String   @id @default(cuid())
-  ticketNumber String  @unique // TKT-2024-001 formatında
+  ticketNumber String  @unique
   title       String
-  subject     String?  // Konu başlığı
+  subject     String?
   description String
-  isUrgent    Boolean  @default(false) // Acil durum mu?
+  isUrgent    Boolean  @default(false)
   statusId    String?
   status      SupportStatus? @relation(fields: [statusId], references: [id])
   priorityId  String?
@@ -527,18 +316,15 @@ model SupportTicket {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // İlişkiler
   categoryId  String
   category    SupportCategory @relation(fields: [categoryId], references: [id])
   
   authorId    String
   author      ClinicUser @relation(fields: [authorId], references: [id])
   
-  // Oluşturan kullanıcı
   createdById String?
   createdBy   ClinicUser? @relation("TicketCreatedBy", fields: [createdById], references: [id])
   
-  // Atanan kullanıcı
   assignedToId String?
   assignedTo   ClinicUser? @relation("TicketAssignedTo", fields: [assignedToId], references: [id])
   
@@ -546,7 +332,6 @@ model SupportTicket {
   clinic      Clinic @relation(fields: [clinicId], references: [id])
 
   messages    SupportMessage[]
-  attachments SupportAttachment[]
 
   @@map("support_tickets")
 }
@@ -554,20 +339,17 @@ model SupportTicket {
 model SupportMessage {
   id          String   @id @default(cuid())
   content     String
-  authorName  String?  // Yazar adı (admin olmayan kullanıcılar için)
-  authorType  String   @default("USER") // USER, ADMIN
+  authorName  String?
+  authorType  String   @default("USER")
   isFromAdmin Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // İlişkiler
   ticketId    String
   ticket      SupportTicket @relation(fields: [ticketId], references: [id])
   
   authorId    String?
   author      ClinicUser? @relation(fields: [authorId], references: [id])
-
-  attachments SupportAttachment[]
 
   @@map("support_messages")
 }
@@ -576,13 +358,12 @@ model SupportPriority {
   id          String   @id @default(cuid())
   name        String
   displayName String
-  level       Int      @default(0) // Sıralama için
-  color       String   @default("#6B7280") // Hex color code
+  level       Int      @default(0)
+  color       String   @default("#6B7280")
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // İlişkiler
   tickets     SupportTicket[]
   reminders   Reminder[]
 
@@ -593,55 +374,13 @@ model SupportStatus {
   id          String   @id @default(cuid())
   name        String
   displayName String
-  color       String   @default("#6B7280") // Hex color code
-  order       Int      @default(0) // Sıralama için
+  color       String   @default("#6B7280")
+  order       Int      @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // İlişkiler
   tickets     SupportTicket[]
 
   @@map("support_statuses")
-}
-
-model SupportAttachment {
-  id          String   @id @default(cuid())
-  filename    String
-  originalName String
-  mimeType    String
-  size        Int      // Byte cinsinden
-  path        String   // Dosya yolu
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // İlişkiler
-  ticketId    String
-  ticket      SupportTicket @relation(fields: [ticketId], references: [id])
-  
-  messageId   String?
-  message     SupportMessage? @relation(fields: [messageId], references: [id])
-
-  @@map("support_attachments")
-}
-
-// ===== SYSTEM LOGGING MODELS =====
-
-model SystemLog {
-  id          String   @id @default(cuid())
-  level       String   // INFO, WARN, ERROR, DEBUG
-  category    String   // SYSTEM, SECURITY, PERFORMANCE, etc.
-  message     String
-  details     String?  // JSON string olarak detaylar
-  stackTrace  String?  // Stack trace bilgisi
-  timestamp   DateTime @default(now())
-  
-  // İlişkiler
-  clinicId    String?
-  clinic      Clinic? @relation(fields: [clinicId], references: [id])
-  
-  userId      String?
-  user        ClinicUser? @relation(fields: [userId], references: [id])
-
-  @@map("system_logs")
 } 

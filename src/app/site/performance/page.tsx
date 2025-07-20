@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { FaChartLine, FaDollarSign, FaUsers, FaCheckCircle, FaArrowUp, FaArrowDown, FaCalendarAlt, FaFilter, FaLiraSign, FaEuroSign, FaPoundSign, FaInfoCircle, FaFileExport } from 'react-icons/fa'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts'
 import { formatCurrencySymbol, CurrencyCode, DEFAULT_CURRENCY, CURRENCY_SYMBOLS } from '@/lib/currency'
+import { PageContainer } from '@/components/ui/PageContainer'
 
 interface PerformanceData {
   totalRevenue: number
@@ -137,7 +138,7 @@ export default function PerformancePage() {
 
   if (isLoading) {
     return (
-      <div className="w-full">
+      <PageContainer>
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded mb-8"></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
@@ -149,22 +150,22 @@ export default function PerformancePage() {
             ))}
           </div>
         </div>
-      </div>
+      </PageContainer>
     )
   }
 
   if (error) {
     return (
-      <div className="w-full">
+      <PageContainer>
         <div className="text-red-600 p-4 bg-red-50 rounded-lg">
           Hata: {error.message}
         </div>
-      </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="w-full">
+    <PageContainer>
       {/* Başlık ve Filtreler */}
       <div className="mb-6">
         <h1 className="text-xl lg:text-2xl font-bold text-gray-800 mb-4">Satış Performansı</h1>
@@ -248,172 +249,76 @@ export default function PerformancePage() {
       )}
 
       {/* Çoklu Zaman Serisi Grafik */}
-      <div className="bg-white rounded-xl shadow p-4 lg:p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <FaChartLine className="text-blue-500" />
-            Aylık Gelir, Hasta ve Teklif
-          </h3>
-          <span className="text-xs text-gray-500 flex items-center gap-2">
-            {isFetching ? 'Veriler güncelleniyor...' : 'Veriler güncel'}
-            <span className={isFetching ? 'animate-spin' : ''}><FaCheckCircle className="text-green-500" /></span>
-          </span>
-        </div>
-        {(!data?.monthlyData || data.monthlyData.length === 0) ? (
-          <div className="text-gray-400 text-center py-12">Veri bulunamadı</div>
-        ) : (
-          <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={data.monthlyData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+      {data?.monthlyData && data.monthlyData.length > 0 && (
+        <div className="bg-white rounded-xl shadow p-6 mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-800">Aylık Performans Trendi</h3>
+            <button
+              onClick={exportCSV}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <FaFileExport /> CSV İndir
+            </button>
+          </div>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={data.monthlyData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
-              <YAxis yAxisId="left" tickFormatter={v => formatCurrencySymbol(v, targetCurrency)} />
-              <YAxis yAxisId="right" orientation="right" tickFormatter={v => v.toLocaleString('tr-TR')} />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              <Line yAxisId="left" type="monotone" dataKey="revenue" name="Gelir" stroke="#3b82f6" strokeWidth={2} dot={false} />
-              <Line yAxisId="right" type="monotone" dataKey="patients" name="Hasta" stroke="#10b981" strokeWidth={2} dot={false} />
-              <Line yAxisId="right" type="monotone" dataKey="offers" name="Teklif" stroke="#f59e42" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        )}
-      </div>
-
-      {/* Tablo ve Export */}
-      <div className="bg-white rounded-xl shadow p-4 lg:p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <FaChartLine className="text-blue-500" />
-            Aylık Detaylar
-          </h3>
-          <button onClick={exportCSV} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
-            <FaFileExport /> Export (CSV)
-          </button>
-        </div>
-        {(!data?.monthlyData || data.monthlyData.length === 0) ? (
-          <div className="text-gray-400 text-center py-12">Veri bulunamadı</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-4 py-2 text-left">Ay</th>
-                  <th className="px-4 py-2 text-left">Gelir</th>
-                  <th className="px-4 py-2 text-left">Hasta</th>
-                  <th className="px-4 py-2 text-left">Teklif</th>
-                  <th className="px-4 py-2 text-left">Başarı Oranı</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.monthlyData.map((m: any) => (
-                  <tr key={m.month} className="border-b">
-                    <td className="px-4 py-2">{m.month}</td>
-                    <td className="px-4 py-2">{formatCurrencySymbol(m.revenue, targetCurrency)}</td>
-                    <td className="px-4 py-2">{m.patients}</td>
-                    <td className="px-4 py-2">{m.offers}</td>
-                    <td className="px-4 py-2">{m.successRate.toFixed(1)}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Grafik Alanları */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
-        {/* Gelir Grafiği */}
-        <div className="bg-white rounded-xl shadow p-4 lg:p-6">
-          <h3 className="font-semibold text-gray-700 mb-4 text-sm lg:text-base">Aylık Gelir ({targetCurrency})</h3>
-          <ResponsiveContainer width="100%" height={250} className="lg:h-[300px]">
-            <LineChart data={data?.monthlyData || []}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2} name="Gelir" />
+              <Line yAxisId="left" type="monotone" dataKey="revenue" stroke="#8884d8" name="Gelir" strokeWidth={2} />
+              <Line yAxisId="right" type="monotone" dataKey="patients" stroke="#82ca9d" name="Hasta" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
-        
-        {/* Hasta Grafiği */}
-        <div className="bg-white rounded-xl shadow p-4 lg:p-6">
-          <h3 className="font-semibold text-gray-700 mb-4 text-sm lg:text-base">Hasta ve Teklif Sayısı</h3>
-          <ResponsiveContainer width="100%" height={250} className="lg:h-[300px]">
-            <BarChart data={data?.monthlyData || []}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="patients" fill="#3b82f6" name="Hasta" />
-              <Bar dataKey="offers" fill="#f59e0b" name="Teklif" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+      )}
 
       {/* Para Birimi Dağılımı */}
       {data?.currencyDistribution && data.currencyDistribution.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
-          <div className="bg-white rounded-xl shadow p-4 lg:p-6">
-            <h3 className="font-semibold text-gray-700 mb-4 text-sm lg:text-base">Para Birimi Dağılımı</h3>
-            <ResponsiveContainer width="100%" height={250} className="lg:h-[300px]">
+        <div className="bg-white rounded-xl shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-6">Para Birimi Dağılımı</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={data.currencyDistribution}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={(props: any) => `${props.currency} ${props.percentage.toFixed(1)}%`}
-                  outerRadius={60}
-                  className="lg:outerRadius-80"
+                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                  outerRadius={80}
                   fill="#8884d8"
                   dataKey="amount"
                 >
-                  {data.currencyDistribution.map((entry: { currency: string; amount: number; percentage: number }, index: number) => (
+                  {data.currencyDistribution.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            <div className="space-y-4">
+              {data.currencyDistribution.map((item: any, index: number) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-4 h-4 rounded-full" 
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="font-medium">{item.currency}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold">{formatCurrencySymbol(item.amount, item.currency as CurrencyCode)}</div>
+                    <div className="text-sm text-gray-500">{item.percentage.toFixed(1)}%</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
-
-      {/* Detaylı Tablo */}
-      <div className="bg-white rounded-xl shadow p-4 lg:p-6">
-        <h3 className="font-semibold text-gray-700 mb-4 text-sm lg:text-base">Aylık Performans Detayları</h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-3 lg:px-6 py-2 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase">Ay</th>
-                <th className="px-3 lg:px-6 py-2 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase">Gelir ({targetCurrency})</th>
-                <th className="px-3 lg:px-6 py-2 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase">Hasta</th>
-                <th className="px-3 lg:px-6 py-2 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase">Teklif</th>
-                <th className="px-3 lg:px-6 py-2 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase">Başarı Oranı</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {data?.monthlyData?.map((data: { month: string; revenue: number; patients: number; offers: number; successRate: number }, index: number) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-3 lg:px-6 py-2 lg:py-4 whitespace-nowrap text-xs lg:text-sm font-medium text-gray-900">{data.month}</td>
-                  <td className="px-3 lg:px-6 py-2 lg:py-4 whitespace-nowrap text-xs lg:text-sm text-gray-900">
-                    {formatCurrencySymbol(data.revenue, targetCurrency)}
-                  </td>
-                  <td className="px-3 lg:px-6 py-2 lg:py-4 whitespace-nowrap text-xs lg:text-sm text-gray-900">{data.patients}</td>
-                  <td className="px-3 lg:px-6 py-2 lg:py-4 whitespace-nowrap text-xs lg:text-sm text-gray-900">{data.offers}</td>
-                  <td className="px-3 lg:px-6 py-2 lg:py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                      {data.successRate.toFixed(1)}%
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    </PageContainer>
   )
 } 

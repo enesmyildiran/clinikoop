@@ -96,9 +96,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // İlk kullanıcıyı bul
+    // Herhangi bir kullanıcıyı bul (klinik fark etmez)
     const firstUser = await prisma.clinicUser.findFirst({
-      where: { clinicId: firstClinic.id },
+      where: { isActive: true },
       select: { id: true }
     });
 
@@ -150,7 +150,7 @@ export async function POST(request: Request) {
         isUrgent,
         clinicId,
         authorId: createdById, // authorId alanı için createdById kullanıyoruz
-        createdById,
+        createdById: createdById, // createdById de aynı kullanıcı
         categoryId,
         priorityId,
         statusId: defaultStatus.id

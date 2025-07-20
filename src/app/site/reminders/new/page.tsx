@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { useReminders } from '@/contexts/ReminderContext'
 import { useToast } from '@/components/ui/Toast'
+import { PageContainer } from '@/components/ui/PageContainer'
 
 export default function NewReminderPage() {
   const router = useRouter()
@@ -138,7 +139,7 @@ export default function NewReminderPage() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-8">
+    <PageContainer>
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Button
@@ -150,7 +151,7 @@ export default function NewReminderPage() {
           Geri
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Yeni Hatırlatma</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Yeni Hatırlatma</h1>
           <p className="text-gray-600">Yeni bir hatırlatma oluşturun</p>
         </div>
       </div>
@@ -319,6 +320,6 @@ export default function NewReminderPage() {
           </div>
         </form>
       </div>
-    </div>
+    </PageContainer>
   )
 } 

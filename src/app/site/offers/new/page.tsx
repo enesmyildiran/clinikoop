@@ -16,6 +16,7 @@ import { ToothSelector } from "@/components/ui/ToothSelector";
 import { ToothPricingInput } from "@/components/ui/ToothPricingInput";
 import { PDFPreview } from "@/components/ui/PDFPreview";
 import { useToast } from "@/components/ui/Toast";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 const steps = [
   { label: "Hasta Bilgileri" },
@@ -621,26 +622,34 @@ export default function OfferCreatePage() {
   // Başarı sayfası
   if (showSuccess && successData) {
     return (
-      <div className="w-full max-w-md mx-auto py-16 text-center">
-        <div className="bg-green-50 border border-green-200 rounded-xl p-8 shadow">
-          <h2 className="text-2xl font-bold text-green-700 mb-2">Teklif başarıyla gönderildi!</h2>
-          <div className="text-gray-700 mb-4">
-            <div><b>Hasta:</b> {successData.patientName}</div>
-            <div><b>Teklif No:</b> {successData.offerId}</div>
-            <div><b>Tarih:</b> {successData.date}</div>
-          </div>
-          <div className="flex flex-col gap-3 mt-6">
-            <Button onClick={() => router.push(`/site/patients/${selectedPatientId}`)} className="w-full">Hasta Profili&apos;ne Git</Button>
-            <Button onClick={() => router.push('/site/offers')} variant="outline" className="w-full">Teklifler Listesine Dön</Button>
-            <Button onClick={() => router.push('/site/offers/new')} variant="ghost" className="w-full">Yeni Teklif Oluştur</Button>
+      <PageContainer>
+        <div className="w-full max-w-md mx-auto py-16 text-center">
+          <div className="bg-green-50 border border-green-200 rounded-xl p-8 shadow">
+            <h2 className="text-2xl font-bold text-green-700 mb-2">Teklif başarıyla gönderildi!</h2>
+            <div className="text-gray-700 mb-4">
+              <div><b>Hasta:</b> {successData.patientName}</div>
+              <div><b>Teklif No:</b> {successData.offerId}</div>
+              <div><b>Tarih:</b> {successData.date}</div>
+            </div>
+            <div className="flex flex-col gap-3 mt-6">
+              <Button onClick={() => router.push(`/site/patients/${selectedPatientId}`)} className="w-full">Hasta Profili&apos;ne Git</Button>
+              <Button onClick={() => router.push('/site/offers')} variant="outline" className="w-full">Teklifler Listesine Dön</Button>
+              <Button onClick={() => router.push('/site/offers/new')} variant="ghost" className="w-full">Yeni Teklif Oluştur</Button>
+            </div>
           </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-8 min-h-screen bg-muted flex items-start justify-center">
+    <PageContainer>
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Yeni Teklif Oluştur</h1>
+        <p className="text-gray-600">Hasta için yeni bir tedavi teklifi oluşturun</p>
+      </div>
+
       <Card className="w-full">
         <CardContent className="p-6 sm:p-8 md:p-10">
           {/* Stepper */}
@@ -1618,6 +1627,6 @@ export default function OfferCreatePage() {
           {/* Diğer adımlar burada benzer şekilde eklenebilir */}
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 } 

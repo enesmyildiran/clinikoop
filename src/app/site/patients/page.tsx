@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { FaPlus, FaUser, FaPhone, FaEnvelope, FaSearch, FaInstagram, FaFacebook, FaWhatsapp, FaBell, FaEye, FaEdit, FaGlobe } from 'react-icons/fa'
 import { Button } from '@/components/ui/Button'
 import { useQuery } from '@tanstack/react-query'
+import { PageContainer } from '@/components/ui/PageContainer'
 
 // Ülke bayrakları için emoji mapping
 const countryFlags: { [key: string]: string } = {
@@ -174,7 +175,7 @@ export default function PatientsPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-2 md:px-4 py-8">
+    <PageContainer>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Hasta Listesi</h1>
         <Link href="/site/patients/new">
@@ -257,96 +258,95 @@ export default function PatientsPage() {
                             </button>
                           </div>
                         )}
-                        <div className="flex gap-2 mt-2">
-                          {patient.instagram && (
+                        {patient.instagram && (
+                          <div className="flex items-center gap-2">
+                            <FaInstagram className="text-gray-400 text-xs" />
                             <button
                               onClick={() => handleContactClick('instagram', patient.instagram)}
-                              className="text-pink-500 hover:text-pink-700 transition-colors"
-                              title={`Instagram: ${patient.instagram}`}
+                              className="text-blue-600 hover:underline text-sm cursor-pointer"
                             >
-                              <FaInstagram size={14} />
+                              {patient.instagram}
                             </button>
-                          )}
-                          {patient.facebook && (
+                          </div>
+                        )}
+                        {patient.facebook && (
+                          <div className="flex items-center gap-2">
+                            <FaFacebook className="text-gray-400 text-xs" />
                             <button
                               onClick={() => handleContactClick('facebook', patient.facebook)}
-                              className="text-blue-700 hover:text-blue-900 transition-colors"
-                              title={`Facebook: ${patient.facebook}`}
+                              className="text-blue-600 hover:underline text-sm cursor-pointer"
                             >
-                              <FaFacebook size={14} />
+                              {patient.facebook}
                             </button>
-                          )}
-                          {patient.whatsapp && (
-                            <button
-                              onClick={() => handleContactClick('whatsapp', patient.whatsapp)}
-                              className="text-green-600 hover:text-green-800 transition-colors"
-                              title={`WhatsApp: ${patient.whatsapp}`}
-                            >
-                              <FaWhatsapp size={14} />
-                            </button>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {patient.country && (
-                        <div className="flex items-center gap-2">
-                          <img 
-                            src={`https://flagcdn.com/16x12/${patient.country.toLowerCase()}.png`} 
-                            alt={countryNames[patient.country] || patient.country}
-                            className="w-4 h-3 rounded"
-                          />
-                          <span>{countryNames[patient.country] || patient.country}</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {patient.referralSourceId && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {sourcesArray.find((s: any) => s.id === patient.referralSourceId)?.displayName || 'Bilinmeyen Kaynak'}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {patient.birthDate ? new Date(patient.birthDate).toLocaleDateString('tr-TR') : '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {patient._count?.offers || 0} teklif
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {patient.insurance ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {patient.insurance}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <Link 
+                        <span className="text-lg">{getCountryFlag(patient.country)}</span>
+                        <span className="text-sm text-gray-900">
+                          {countryNames[patient.country?.toUpperCase()] || patient.country || 'Belirtilmemiş'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-900">
+                        {patient.referralSource ? 
+                          sourcesArray.find(s => s.id === patient.referralSource.id)?.name || 
+                          sourceNames[patient.referralSource.name] || 
+                          patient.referralSource.name : 
+                          'Belirtilmemiş'
+                        }
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {patient.birthDate ? new Date(patient.birthDate).toLocaleDateString('tr-TR') : 'Belirtilmemiş'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {patient._count?.offers || 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        patient.hasInsurance ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {patient.hasInsurance ? 'Var' : 'Yok'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center gap-2">
+                        <Link
                           href={`/site/patients/${patient.id}`}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Detayları Görüntüle"
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Görüntüle"
                         >
-                          <FaEye className="w-4 h-4" />
+                          <FaEye />
                         </Link>
-                        <Link 
-                          href={`/site/patients/${patient.id}`}
-                          className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        <Link
+                          href={`/site/patients/${patient.id}/edit`}
+                          className="text-gray-600 hover:text-gray-900"
                           title="Düzenle"
                         >
-                          <FaEdit className="w-4 h-4" />
+                          <FaEdit />
                         </Link>
                         <button
                           onClick={() => handleCreateReminder(patient.id, patient.name)}
-                          className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                          className="text-orange-600 hover:text-orange-900"
                           title="Hatırlatma Oluştur"
                         >
-                          <FaBell className="w-4 h-4" />
+                          <FaBell />
                         </button>
+                        {patient.phone && (
+                          <a
+                            href={`https://wa.me/${patient.phone.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-600 hover:text-green-900"
+                            title="WhatsApp"
+                          >
+                            <FaWhatsapp />
+                          </a>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -356,6 +356,6 @@ export default function PatientsPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageContainer>
   )
 } 

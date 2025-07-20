@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { FaCog, FaUser, FaShieldAlt, FaBell, FaPalette, FaDatabase, FaGlobe, FaMoneyBillWave, FaTags, FaEye } from 'react-icons/fa'
 import Link from 'next/link'
 import { FaFilePdf } from 'react-icons/fa'
+import { PageContainer } from '@/components/ui/PageContainer'
 
 const settingCategories = [
   {
@@ -80,7 +81,7 @@ const settingCategories = [
 
 export default function SettingsPage() {
   return (
-    <div className="w-full">
+    <PageContainer>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Sistem Ayarları</h1>
         <p className="text-gray-600 mt-2">Sistem ayarlarını yönetmek için aşağıdaki kategorilerden birini seçin</p>
@@ -140,6 +141,6 @@ export default function SettingsPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 } 

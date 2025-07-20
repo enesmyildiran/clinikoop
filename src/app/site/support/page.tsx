@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { PageContainer } from '@/components/ui/PageContainer';
 
 interface SupportTicket {
   id: string;
@@ -38,7 +39,7 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8">
+    <PageContainer>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Destek Taleplerim</h1>
         <Link
@@ -95,6 +96,6 @@ export default function SupportPage() {
           </table>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 } 

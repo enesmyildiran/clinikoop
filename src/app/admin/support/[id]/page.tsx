@@ -68,8 +68,16 @@ export default function AdminSupportTicketDetailPage() {
         fetch('/api/support/statuses'),
         fetch('/api/support/priorities')
       ]);
-      if (statusRes.ok) setStatuses(await statusRes.json());
-      if (priorityRes.ok) setPriorities(await priorityRes.json());
+      
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        setStatuses(statusData.statuses || []);
+      }
+      
+      if (priorityRes.ok) {
+        const priorityData = await priorityRes.json();
+        setPriorities(priorityData.priorities || []);
+      }
     } catch (err) {
       console.error('Seçenekler yüklenemedi:', err);
     }

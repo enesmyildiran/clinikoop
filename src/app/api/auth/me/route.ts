@@ -1,18 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/authOptions'
 import { prisma } from '@/lib/db'
+import bcrypt from 'bcryptjs'
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { message: 'Oturum bulunamadı' },
+        { status: 401 }
+      )
+    }
+
     // Geliştirme modunda mock session (sadece localhost'ta)
     const isDevelopment = process.env.NODE_ENV === 'development'
     const host = request.headers.get('host') || ''
     const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1')
     
     if (isDevelopment && isLocalhost) {
-      // Geliştirme modunda süper admin olarak kabul et
-      const superAdmin = await prisma.user.findFirst({
+      // Geliştirme modunda süper admin oluştur veya al
+      let superAdmin = await prisma.user.findFirst({
         where: { role: 'SUPER_ADMIN' }
       })
+      
+      if (!superAdmin) {
+        // Süper admin yoksa oluştur
+        const hashedPassword = await bcrypt.hash('superadmin123', 12)
+        superAdmin = await prisma.user.create({
+          data: {
+            email: 'superadmin@clinikoop.com',
+            name: 'Süper Admin',
+            role: 'SUPER_ADMIN',
+            password: hashedPassword,
+          }
+        })
+      }
       
       if (superAdmin) {
         const { password: _, ...userWithoutPassword } = superAdmin
@@ -23,34 +48,43 @@ export async function GET(request: NextRequest) {
           isDevelopment: true // Frontend'e geliştirme modunda olduğumuzu bildir
         })
       }
+    }
+    
+    // Production modunda veya localhost değilse gerçek auth kontrolü
+    // Session'dan gelen kullanıcı bilgilerini kullan
+    const user = session.user as any
+    
+    if (user.isSuperAdmin) {
+      // Süper admin ise User tablosundan bilgileri al
+      const adminUser = await prisma.user.findUnique({
+        where: { id: user.id }
+      })
       
-      // Süper admin yoksa ilk kullanıcıyı al
-      const firstUser = await prisma.user.findFirst()
-      if (firstUser) {
-        const { password: _, ...userWithoutPassword } = firstUser
+      if (adminUser) {
+        const { password: _, ...userWithoutPassword } = adminUser
         return NextResponse.json({
           user: userWithoutPassword,
           clinic: null,
           isSuperAdmin: true,
-          isDevelopment: true
+          isDevelopment: false
         })
       }
-    }
-    
-    // Production modunda veya localhost değilse gerçek auth kontrolü
-    // Geçici olarak admin kullanıcısını döndür
-    const adminUser = await prisma.user.findFirst({
-      where: { email: 'admin@clinikoop.com' }
-    })
-    
-    if (adminUser) {
-      const { password: _, ...userWithoutPassword } = adminUser
-      return NextResponse.json({
-        user: userWithoutPassword,
-        clinic: null,
-        isSuperAdmin: true,
-        isDevelopment: false
+    } else {
+      // Klinik kullanıcısı ise ClinicUser tablosundan bilgileri al
+      const clinicUser = await prisma.clinicUser.findUnique({
+        where: { id: user.id },
+        include: { clinic: true }
       })
+      
+      if (clinicUser) {
+        const { password: _, ...userWithoutPassword } = clinicUser
+        return NextResponse.json({
+          user: userWithoutPassword,
+          clinic: clinicUser.clinic,
+          isSuperAdmin: false,
+          isDevelopment: false
+        })
+      }
     }
     
     return NextResponse.json(

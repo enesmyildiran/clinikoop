@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('')
@@ -17,22 +18,17 @@ export default function AdminLoginPage() {
     setError('')
     
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       })
       
-      if (response.ok) {
-        const data = await response.json()
-        if (data.isSuperAdmin) {
-          router.push('/admin/dashboard')
-        } else {
-          setError('Bu sayfa sadece süper adminler için')
-        }
-      } else {
-        const data = await response.json()
-        setError(data.message || 'Giriş başarısız')
+      if (result?.error) {
+        setError('Geçersiz e-posta veya şifre')
+      } else if (result?.ok) {
+        // Başarılı giriş, admin paneline yönlendir
+        router.push('/admin/dashboard')
       }
     } catch (err) {
       setError('Bir hata oluştu')
@@ -56,7 +52,7 @@ export default function AdminLoginPage() {
             <input
               type="email"
               className="w-full px-4 py-2 rounded-lg border border-white/20 focus:ring-2 focus:ring-red-500 focus:outline-none text-gray-900 bg-white"
-              placeholder="admin@clinikoop.com"
+              placeholder="admin@test.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
@@ -68,7 +64,7 @@ export default function AdminLoginPage() {
             <input
               type="password"
               className="w-full px-4 py-2 rounded-lg border border-white/20 focus:ring-2 focus:ring-red-500 focus:outline-none text-gray-900 bg-white"
-              placeholder="Şifreniz"
+              placeholder="admin123"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
@@ -94,7 +90,7 @@ export default function AdminLoginPage() {
         
         <div className="mt-4 text-center text-xs text-red-200">
           <p>Test Kullanıcısı:</p>
-          <p>admin@clinikoop.com / admin123</p>
+          <p>admin@test.com / admin123</p>
         </div>
       </div>
     </div>

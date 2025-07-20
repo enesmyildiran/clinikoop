@@ -3,6 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { PageContainer } from '@/components/ui/PageContainer';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Checkbox } from '@/components/ui/Checkbox';
+import { FaArrowLeft, FaSave } from 'react-icons/fa';
 
 interface Category {
   id: string;
@@ -44,8 +51,12 @@ export default function NewSupportTicketPage() {
         fetch('/api/support/priorities')
       ]);
       if (!catRes.ok || !priRes.ok) throw new Error('Seçenekler yüklenemedi');
-      setCategories(await catRes.json());
-      setPriorities(await priRes.json());
+      
+      const catData = await catRes.json();
+      const priData = await priRes.json();
+      
+      setCategories(catData.categories || []);
+      setPriorities(priData.priorities || []);
     } catch (err: any) {
       setError(err.message || 'Bilinmeyen hata');
     } finally {
@@ -80,88 +91,113 @@ export default function NewSupportTicketPage() {
   };
 
   return (
-    <div className="max-w-xl mx-auto py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Yeni Destek Talebi</h1>
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-sm border">
+    <PageContainer>
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <Button
+          onClick={() => router.back()}
+          variant="outline"
+          size="sm"
+        >
+          <FaArrowLeft className="mr-2" />
+          Geri
+        </Button>
         <div>
-          <label className="block text-sm font-medium mb-1">Başlık</label>
-          <input
-            type="text"
-            name="subject"
-            value={form.subject}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-            required
-            maxLength={100}
-          />
+          <h1 className="text-2xl font-bold text-gray-800">Yeni Destek Talebi</h1>
+          <p className="text-gray-600">Yeni bir destek talebi oluşturun</p>
         </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Açıklama</label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400 min-h-[100px]"
-            required
-            maxLength={1000}
-          />
-        </div>
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Kategori</label>
-            <select
-              name="categoryId"
-              value={form.categoryId}
+      </div>
+
+      {/* Form */}
+      <div className="bg-white rounded-xl shadow-sm border p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Başlık</label>
+            <Input
+              name="subject"
+              value={form.subject}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              placeholder="Destek talebi başlığı"
               required
-            >
-              <option value="">Seçiniz</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
+              maxLength={100}
+            />
           </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Öncelik</label>
-            <select
-              name="priorityId"
-              value={form.priorityId}
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+            <Textarea
+              name="description"
+              value={form.description}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              placeholder="Sorununuzu detaylı olarak açıklayın..."
               required
-            >
-              <option value="">Seçiniz</option>
-              {priorities.map((pri) => (
-                <option key={pri.id} value={pri.id}>{pri.name}</option>
-              ))}
-            </select>
+              maxLength={1000}
+              rows={4}
+            />
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="isUrgent"
-            checked={form.isUrgent}
-            onChange={handleChange}
-            id="urgent"
-            className="h-4 w-4 text-red-600 border-gray-300 rounded"
-          />
-          <label htmlFor="urgent" className="text-sm">Acil (kritik durumlar için)</label>
-        </div>
-        {error && <div className="text-red-500 text-sm">{error}</div>}
-        {success && <div className="text-green-600 text-sm">Talebiniz başarıyla oluşturuldu!</div>}
-        <div className="flex justify-between items-center">
-          <Link href="/site/support" className="text-gray-500 hover:underline">İptal</Link>
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"
-            disabled={submitting || loading}
-          >
-            {submitting ? 'Gönderiliyor...' : 'Talep Oluştur'}
-          </button>
-        </div>
-      </form>
-    </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+              <Select name="categoryId" value={form.categoryId} onValueChange={(value) => setForm(f => ({ ...f, categoryId: value }))} disabled={loading}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loading ? "Yükleniyor..." : "Kategori seçin"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Öncelik</label>
+              <Select name="priorityId" value={form.priorityId} onValueChange={(value) => setForm(f => ({ ...f, priorityId: value }))} disabled={loading}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loading ? "Yükleniyor..." : "Öncelik seçin"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {priorities.map((pri) => (
+                    <SelectItem key={pri.id} value={pri.id}>{pri.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="isUrgent"
+              name="isUrgent"
+              checked={form.isUrgent}
+              onCheckedChange={(checked) => setForm(f => ({ ...f, isUrgent: checked as boolean }))}
+            />
+            <label htmlFor="isUrgent" className="text-sm text-gray-700">Acil (kritik durumlar için)</label>
+          </div>
+          
+          {error && <div className="text-red-500 text-sm p-3 bg-red-50 border border-red-200 rounded-lg">{error}</div>}
+          {success && <div className="text-green-600 text-sm p-3 bg-green-50 border border-green-200 rounded-lg">Talebiniz başarıyla oluşturuldu!</div>}
+          
+          <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+            <Button
+              type="button"
+              onClick={() => router.back()}
+              variant="outline"
+            >
+              İptal
+            </Button>
+            <Button
+              type="submit"
+              disabled={submitting || loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+            >
+              <FaSave className="w-4 h-4" />
+              {submitting ? 'Gönderiliyor...' : 'Talep Oluştur'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </PageContainer>
   );
 } 

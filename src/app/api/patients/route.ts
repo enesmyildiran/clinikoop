@@ -33,30 +33,39 @@ const patientSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    // ClinicId'yi al
     const clinicId = await getClinicIdFromRequest(req);
-    
-    const id = req.nextUrl.searchParams.get('id');
-    if (id) {
-      const whereClause: any = { id, isDeleted: false };
-      if (clinicId) {
-        whereClause.clinicId = clinicId;
-      }
-      
-      const patient = await prisma.patient.findUnique({
-        where: whereClause,
-      });
-      return NextResponse.json({ patient });
+    if (!clinicId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Klinik bilgisi bulunamadı.' 
+      }, { status: 400 });
     }
-    
-    const whereClause: any = { isDeleted: false };
-    if (clinicId) {
-      whereClause.clinicId = clinicId;
-    }
-    
+
     const patients = await prisma.patient.findMany({
-      where: whereClause,
-      orderBy: { createdAt: 'desc' },
+      where: {
+        clinicId: clinicId,
+        isActive: true,
+      },
+      include: {
+        referralSource: {
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            color: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
     });
     return NextResponse.json({ patients });
   } catch (error) {
@@ -95,7 +104,7 @@ export async function POST(req: NextRequest) {
           { email: parsed.data.email || undefined },
         ],
         clinicId: clinicId,
-        isDeleted: false,
+        isActive: true,
       },
     });
     if (existing) {
@@ -171,9 +180,9 @@ export async function DELETE(req: NextRequest) {
       where: { 
         id, 
         clinicId: clinicId,
-        isDeleted: false 
+        isActive: true 
       },
-      data: { isDeleted: true },
+      data: { isActive: false },
     });
     if (patient.count === 0) {
       return NextResponse.json({ error: 'Hasta bulunamadı' }, { status: 404 });
@@ -216,7 +225,7 @@ export async function PUT(req: NextRequest) {
       where: { 
         id, 
         clinicId: clinicId,
-        isDeleted: false 
+        isActive: true 
       } 
     });
     if (!existingPatient) {
@@ -263,7 +272,7 @@ export async function PUT(req: NextRequest) {
       where: { 
         id, 
         clinicId: clinicId,
-        isDeleted: false 
+        isActive: true 
       },
       data: data,
     });

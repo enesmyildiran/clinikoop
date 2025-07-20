@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     
     // Filtreleme koşullarını hazırla
     const whereClause: any = {
-      isDeleted: false,
+      isActive: true,
     };
     
     // Eğer clinicId varsa, sadece o kliniğin tekliflerini getir
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             name: true,
-            isDeleted: true,
+            isActive: true,
           },
         },
         status: {
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
       where: {
         phone: body.patientInfo.phone,
         clinicId: clinicId,
-        isDeleted: false,
+        isActive: true,
       },
     });
 
@@ -293,7 +293,7 @@ export async function DELETE(req: NextRequest) {
     where: { 
       id, 
       clinicId: clinicId,
-      isDeleted: false 
+      isDeleted: false
     },
     data: { isDeleted: true },
   });

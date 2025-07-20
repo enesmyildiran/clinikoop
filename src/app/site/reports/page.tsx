@@ -5,6 +5,7 @@ import ReportFilters from './components/ReportFilters'
 import ReportSummaryCards from './components/ReportSummaryCards'
 import ReportCharts from './components/ReportCharts'
 import { CurrencyCode } from '@/lib/currency'
+import { PageContainer } from '@/components/ui/PageContainer'
 
 const defaultFilters = {
   dateFrom: '', dateTo: '', currency: '', salesUserId: '', treatmentType: '', referralSourceId: '', page: 1, pageSize: 20
@@ -26,7 +27,7 @@ export default function ReportsPage() {
   const targetCurrency = (appliedFilters.currency || 'TRY') as CurrencyCode
 
   return (
-    <div className="w-full">
+    <PageContainer>
       <h1 className="text-xl lg:text-2xl font-bold text-gray-800 mb-4 lg:mb-6">Raporlama</h1>
       <ReportFilters filters={filters} setFilters={setFilters} onApply={handleApplyFilters} />
       <ReportSummaryCards 
@@ -40,6 +41,6 @@ export default function ReportsPage() {
         targetCurrency={targetCurrency}
       />
       {error && <div className="text-red-600 mt-4 p-4 bg-red-50 rounded-lg">Hata: {error.message}</div>}
-    </div>
+    </PageContainer>
   )
 } 

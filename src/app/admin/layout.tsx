@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { useSession } from 'next-auth/react';
 import AdminSidebar from '@/components/AdminSidebar';
 import AdminHeader from '@/components/AdminHeader';
 
@@ -11,20 +11,41 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isSuperAdmin, isLoading } = useAuth();
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    if (!isLoading) {
-      // Geliştirme modunda değilse ve süper admin değilse unauthorized'a yönlendir
-      if (!user || !isSuperAdmin) {
-        router.push('/unauthorized');
-      }
+    // Session yükleniyor
+    if (status === 'loading') {
+      return;
     }
-  }, [user, isSuperAdmin, isLoading, router]);
+
+    // Kullanıcı giriş yapmamış
+    if (status === 'unauthenticated') {
+      router.push('/admin-login');
+      return;
+    }
+
+    // Session var ama user yok
+    if (!session?.user) {
+      router.push('/admin-login');
+      return;
+    }
+
+    // Kullanıcının rolünü kontrol et
+    const user = session.user as any;
+    if (!user.role || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+      router.push('/unauthorized');
+      return;
+    }
+
+    // Yetkili kullanıcı
+    setIsAuthorized(true);
+  }, [session, status, router]);
 
   // Yükleniyor durumu
-  if (isLoading) {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -35,9 +56,16 @@ export default function AdminLayout({
     );
   }
 
-  // Yetkisiz erişim
-  if (!user || !isSuperAdmin) {
-    return null; // Router zaten yönlendirecek
+  // Yetkisiz erişim - henüz yetkilendirme yapılmadı
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Yetkilendirme kontrol ediliyor...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

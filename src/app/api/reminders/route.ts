@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
       dueDate: parsedDueDate,
       patientId: patientId && patientId !== '' ? patientId : undefined,
       offerId: offerId && offerId !== '' ? offerId : undefined,
-      priority: priority || 'MEDIUM',
+      priorityId: priority && priority !== '' ? priority : null,
       isPrivate: isPrivate || false,
       userId,
       clinicId // ClinicId'yi ekle

@@ -24,8 +24,12 @@ export async function getReports(filters: ReportFilters): Promise<ReportResponse
   const offers = await prisma.offer.findMany({
     where: whereClause,
     include: {
-      patient: true,
-      user: true,
+      patientOffers: {
+        include: {
+          patient: true
+        }
+      },
+      createdBy: true,
       status: true,
       treatments: true
     },
@@ -62,9 +66,9 @@ export async function getReports(filters: ReportFilters): Promise<ReportResponse
 
     return {
       id: offer.id,
-      patientName: offer.patient?.name || 'Bilinmeyen Hasta',
+      patientName: offer.patientOffers[0]?.patient?.name || 'Bilinmeyen Hasta',
       patient: {
-        referralSourceId: offer.patient?.referralSourceId
+        referralSourceId: offer.patientOffers[0]?.patient?.referralSourceId
       },
       treatmentType: treatmentTypes || 'Belirtilmemiş',
       amount: totalAmount,
@@ -73,7 +77,7 @@ export async function getReports(filters: ReportFilters): Promise<ReportResponse
       statusDisplay: offer.status?.displayName || 'Taslak',
       createdAt: offer.createdAt.toISOString(),
       salesUser: {
-        name: offer.user?.name || 'Bilinmeyen Kullanıcı'
+        name: offer.createdBy?.name || 'Bilinmeyen Kullanıcı'
       }
     }
   })

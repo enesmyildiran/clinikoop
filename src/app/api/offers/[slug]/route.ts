@@ -13,10 +13,14 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
     const offer = await prisma.offer.findFirst({
       where: { 
         slug: slug,
-        isDeleted: false 
+        isDeleted: false
       },
       include: {
-        patient: true,
+        patientOffers: {
+          include: {
+            patient: true
+          }
+        },
         treatments: true,
         notes: true,
       },

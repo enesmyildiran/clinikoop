@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from "lucide-react";
 
 interface Toast {
   id: string;
@@ -59,7 +59,7 @@ const ToastContainer: React.FC<{ toasts: Toast[]; removeToast: (id: string) => v
   removeToast 
 }) => {
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed top-4 right-4 z-50 space-y-3">
       {toasts.map((toast) => (
         <Toast key={toast.id} toast={toast} onRemove={removeToast} />
       ))}
@@ -71,29 +71,49 @@ const Toast: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({ toa
   const getToastStyles = (type: Toast["type"]) => {
     switch (type) {
       case "success":
-        return "bg-green-50 border-green-200 text-green-800";
+        return "bg-green-50 border-green-200 text-green-800 shadow-green-100";
       case "error":
-        return "bg-red-50 border-red-200 text-red-800";
+        return "bg-red-50 border-red-200 text-red-800 shadow-red-100";
       case "warning":
-        return "bg-yellow-50 border-yellow-200 text-yellow-800";
+        return "bg-yellow-50 border-yellow-200 text-yellow-800 shadow-yellow-100";
       case "info":
-        return "bg-blue-50 border-blue-200 text-blue-800";
+        return "bg-blue-50 border-blue-200 text-blue-800 shadow-blue-100";
       default:
-        return "bg-gray-50 border-gray-200 text-gray-800";
+        return "bg-gray-50 border-gray-200 text-gray-800 shadow-gray-100";
+    }
+  };
+
+  const getIcon = (type: Toast["type"]) => {
+    switch (type) {
+      case "success":
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
+      case "error":
+        return <AlertCircle className="h-5 w-5 text-red-600" />;
+      case "warning":
+        return <AlertTriangle className="h-5 w-5 text-yellow-600" />;
+      case "info":
+        return <Info className="h-5 w-5 text-blue-600" />;
+      default:
+        return <Info className="h-5 w-5 text-gray-600" />;
     }
   };
 
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-4 rounded-lg border shadow-lg max-w-sm animate-in slide-in-from-right-2",
+        "flex items-start gap-3 p-4 rounded-xl border shadow-lg max-w-sm animate-in slide-in-from-right-2 duration-300",
         getToastStyles(toast.type)
       )}
     >
-      <span className="text-sm font-medium">{toast.message}</span>
+      <div className="flex-shrink-0 mt-0.5">
+        {getIcon(toast.type)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium leading-5">{toast.message}</p>
+      </div>
       <button
         onClick={() => onRemove(toast.id)}
-        className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
+        className="flex-shrink-0 ml-2 text-gray-400 hover:text-gray-600 transition-colors"
       >
         <X size={16} />
       </button>
