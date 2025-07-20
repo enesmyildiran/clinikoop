@@ -1,18 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { getClinicIdFromRequest } from '@/lib/clinic-routing';
 
 const prisma = new PrismaClient();
 
 // GET: Tüm PDF şablonlarını listele veya tek şablon getir
 export async function GET(request: NextRequest) {
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    
+    if (!clinicId) {
+      return NextResponse.json(
+        { success: false, error: 'Klinik bilgisi bulunamadı' },
+        { status: 400 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
     // Eğer id parametresi varsa, tek şablon getir
     if (id) {
-      const template = await prisma.pdfTemplate.findUnique({
-        where: { id }
+      const template = await prisma.pdfTemplate.findFirst({
+        where: { 
+          id,
+          clinicId: clinicId
+        }
       });
 
       if (!template) {
@@ -30,6 +43,7 @@ export async function GET(request: NextRequest) {
 
     // Tüm şablonları listele
     const templates = await prisma.pdfTemplate.findMany({
+      where: { clinicId: clinicId },
       orderBy: {
         createdAt: 'desc'
       }
@@ -53,6 +67,15 @@ export async function POST(request: NextRequest) {
   console.log('=== API POST BAŞLADI ===')
   
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    
+    if (!clinicId) {
+      return NextResponse.json(
+        { success: false, error: 'Klinik bilgisi bulunamadı' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     console.log('=== GELEN VERİ ===')
     console.log('Body:', body)
@@ -84,7 +107,10 @@ export async function POST(request: NextRequest) {
     if (isDefault) {
       console.log('Diğer şablonları varsayılan olmaktan çıkarıyor...')
       await prisma.pdfTemplate.updateMany({
-        where: { isDefault: true },
+        where: { 
+          isDefault: true,
+          clinicId: clinicId
+        },
         data: { isDefault: false }
       });
     }
@@ -95,7 +121,8 @@ export async function POST(request: NextRequest) {
         name,
         description: description || '',
         content,
-        isDefault
+        isDefault,
+        clinicId: clinicId
       }
     });
 
@@ -122,6 +149,15 @@ export async function POST(request: NextRequest) {
 // PUT: PDF şablonunu güncelle
 export async function PUT(request: NextRequest) {
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    
+    if (!clinicId) {
+      return NextResponse.json(
+        { success: false, error: 'Klinik bilgisi bulunamadı' },
+        { status: 400 }
+      );
+    }
+
     const body = await request.json();
     const { id, name, content, isDefault } = body;
 
@@ -137,6 +173,7 @@ export async function PUT(request: NextRequest) {
       await prisma.pdfTemplate.updateMany({
         where: { 
           isDefault: true,
+          clinicId: clinicId,
           id: { not: id }
         },
         data: { isDefault: false }
@@ -144,7 +181,10 @@ export async function PUT(request: NextRequest) {
     }
 
     const template = await prisma.pdfTemplate.update({
-      where: { id },
+      where: { 
+        id,
+        clinicId: clinicId
+      },
       data: {
         name,
         content,
@@ -168,6 +208,15 @@ export async function PUT(request: NextRequest) {
 // DELETE: PDF şablonunu sil
 export async function DELETE(request: NextRequest) {
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    
+    if (!clinicId) {
+      return NextResponse.json(
+        { success: false, error: 'Klinik bilgisi bulunamadı' },
+        { status: 400 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -179,7 +228,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     await prisma.pdfTemplate.delete({
-      where: { id }
+      where: { 
+        id,
+        clinicId: clinicId
+      }
     });
 
     return NextResponse.json({

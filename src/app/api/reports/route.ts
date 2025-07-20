@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getReports } from '@/lib/reports'
 import { convertCurrencySync, DEFAULT_CURRENCY } from '@/lib/currency'
+import { getClinicIdFromRequest } from '@/lib/clinic-routing'
 
 export async function POST(request: NextRequest) {
   try {
     const filters = await request.json()
+    
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(request);
     
     // Tüm verileri al (filtreleme olmadan)
     const allData = await getReports({
@@ -16,7 +20,7 @@ export async function POST(request: NextRequest) {
       referralSourceId: '',
       page: 1,
       pageSize: 1000 // Tüm verileri al
-    })
+    }, clinicId || undefined)
 
     // Filtreleme uygula
     let filteredOffers = allData.offers

@@ -2,12 +2,17 @@ import { ReportFilters, ReportResponse } from '@/types/report'
 import { prisma } from '@/lib/db'
 
 // Gerçek veritabanından veri çek
-export async function getReports(filters: ReportFilters): Promise<ReportResponse> {
+export async function getReports(filters: ReportFilters, clinicId?: string): Promise<ReportResponse> {
   const { dateFrom, dateTo, currency, salesUserId, treatmentType, referralSourceId, page, pageSize } = filters
 
   // Tarih filtresi oluştur
   const whereClause: any = {
     isDeleted: false
+  }
+
+  // Clinic filtresi ekle
+  if (clinicId) {
+    whereClause.clinicId = clinicId
   }
 
   if (dateFrom || dateTo) {
@@ -17,7 +22,7 @@ export async function getReports(filters: ReportFilters): Promise<ReportResponse
   }
 
   if (salesUserId) {
-    whereClause.userId = salesUserId
+    whereClause.createdById = salesUserId
   }
 
   // Teklifleri veritabanından çek

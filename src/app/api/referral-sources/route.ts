@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getClinicIdFromRequest } from '@/lib/clinic-routing';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const clinicId = await getClinicIdFromRequest(request);
+    
+    if (!clinicId) {
+      return NextResponse.json(
+        { error: 'Klinik bilgisi bulunamadı' },
+        { status: 400 }
+      );
+    }
+
     const sources = await prisma.referralSource.findMany({
-      where: { isActive: true },
+      where: { 
+        isActive: true,
+        clinicId: clinicId
+      },
       orderBy: { order: 'asc' }
     });
     return NextResponse.json(sources);
@@ -16,6 +29,15 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const clinicId = await getClinicIdFromRequest(req);
+    
+    if (!clinicId) {
+      return NextResponse.json(
+        { error: 'Klinik bilgisi bulunamadı' },
+        { status: 400 }
+      );
+    }
+
     const data = await req.json();
     const created = await prisma.referralSource.create({
       data: {
@@ -25,6 +47,7 @@ export async function POST(req: NextRequest) {
         color: data.color,
         order: data.order,
         isActive: data.isActive ?? true,
+        clinicId: clinicId
       }
     });
     return NextResponse.json(created);
@@ -36,9 +59,32 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
+    const clinicId = await getClinicIdFromRequest(req);
+    
+    if (!clinicId) {
+      return NextResponse.json(
+        { error: 'Klinik bilgisi bulunamadı' },
+        { status: 400 }
+      );
+    }
+
     const data = await req.json();
-    // Geçici olarak başarılı yanıt döndür
-    const updated = { ...data, updatedAt: new Date().toISOString() };
+    
+    const updated = await prisma.referralSource.update({
+      where: { 
+        id: data.id,
+        clinicId: clinicId
+      },
+      data: {
+        name: data.name,
+        displayName: data.displayName,
+        description: data.description,
+        color: data.color,
+        order: data.order,
+        isActive: data.isActive
+      }
+    });
+    
     return NextResponse.json(updated);
   } catch (error) {
     return NextResponse.json({ error: 'Kaynak güncellenirken hata oluştu' }, { status: 500 });
@@ -47,9 +93,24 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const clinicId = await getClinicIdFromRequest(req);
+    
+    if (!clinicId) {
+      return NextResponse.json(
+        { error: 'Klinik bilgisi bulunamadı' },
+        { status: 400 }
+      );
+    }
+
     const { id } = await req.json();
     
-    // Geçici olarak başarılı yanıt döndür
+    await prisma.referralSource.delete({
+      where: { 
+        id: id,
+        clinicId: clinicId
+      }
+    });
+    
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Kaynak silinirken hata oluştu' }, { status: 500 });

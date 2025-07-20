@@ -48,12 +48,18 @@ async function main() {
 
   for (const category of categories) {
     const existingCategory = await prisma.supportCategory.findFirst({
-      where: { name: category.name }
+      where: { 
+        name: category.name,
+        clinicId: defaultClinic.id
+      }
     });
 
     if (!existingCategory) {
       await prisma.supportCategory.create({
-        data: category
+        data: {
+          ...category,
+          clinicId: defaultClinic.id
+        }
       });
     }
   }
@@ -69,12 +75,18 @@ async function main() {
 
   for (const priority of priorities) {
     const existingPriority = await prisma.supportPriority.findFirst({
-      where: { name: priority.name }
+      where: { 
+        name: priority.name,
+        clinicId: defaultClinic.id
+      }
     });
 
     if (!existingPriority) {
       await prisma.supportPriority.create({
-        data: priority
+        data: {
+          ...priority,
+          clinicId: defaultClinic.id
+        }
       });
     }
   }
@@ -90,12 +102,18 @@ async function main() {
 
   for (const status of statuses) {
     const existingStatus = await prisma.supportStatus.findFirst({
-      where: { name: status.name }
+      where: { 
+        name: status.name,
+        clinicId: defaultClinic.id
+      }
     });
 
     if (!existingStatus) {
       await prisma.supportStatus.create({
-        data: status
+        data: {
+          ...status,
+          clinicId: defaultClinic.id
+        }
       });
     }
   }

@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model Clinic {
@@ -33,6 +33,11 @@ model Clinic {
   settings              ClinicSetting[]
   tickets               SupportTicket[]
   offerStatuses         OfferStatus[]
+  referralSources       ReferralSource[]
+  supportCategories     SupportCategory[]
+  supportPriorities     SupportPriority[]
+  supportStatuses       SupportStatus[]
+  pdfTemplates          PDFTemplate[]
 
   @@map("clinics")
 }
@@ -171,6 +176,8 @@ model Offer {
   statusId          String?
   status            OfferStatus? @relation(fields: [statusId], references: [id])
 
+  pdfTemplate       PDFTemplate? @relation(fields: [pdfTemplateId], references: [id])
+
   treatments        Treatment[]
   patientOffers     PatientOffer[]
   reminders         Reminder[]
@@ -288,6 +295,9 @@ model ReferralSource {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
+
   patients    Patient[]
 
   @@map("referral_sources")
@@ -302,6 +312,9 @@ model SupportCategory {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
 
   tickets     SupportTicket[]
 
@@ -370,6 +383,9 @@ model SupportPriority {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
+
   tickets     SupportTicket[]
   reminders   Reminder[]
 
@@ -386,7 +402,28 @@ model SupportStatus {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
+
   tickets     SupportTicket[]
 
   @@map("support_statuses")
+}
+
+model PDFTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  content     String
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
+
+  offers      Offer[]
+
+  @@map("pdf_templates")
 } 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getReports } from '@/lib/reports';
 import { convertCurrencySync, DEFAULT_CURRENCY } from '@/lib/currency';
+import { getClinicIdFromRequest } from '@/lib/clinic-routing';
 
 export async function GET() {
   return POST(new NextRequest('http://localhost:3000/api/performance', {
@@ -13,6 +14,9 @@ export async function POST(request: NextRequest) {
   try {
     const { timeRange, targetCurrency } = await request.json();
     
+    // ClinicId'yi al
+    const clinicId = await getClinicIdFromRequest(request);
+    
     // Tüm verileri al
     const allData = await getReports({
       dateFrom: '',
@@ -22,9 +26,10 @@ export async function POST(request: NextRequest) {
       treatmentType: '',
       page: 1,
       pageSize: 1000
-    });
+    }, clinicId || undefined);
 
     console.log('🎯 Performance API - getReports sonucu:', {
+      clinicId,
       totalOffers: allData.offers.length,
       firstOffer: allData.offers[0] ? {
         id: allData.offers[0].id,
