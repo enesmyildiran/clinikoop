@@ -41,8 +41,8 @@ export default function ReportFilters({ filters, setFilters, onApply }: ReportFi
         <h3 className="text-base lg:text-lg font-semibold text-gray-800">Filtreler</h3>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-4">
+        <div className="sm:col-span-2 lg:col-span-1">
           <label className="block text-xs lg:text-sm font-medium text-gray-700 mb-1">Tarih Aralığı</label>
           <div className="flex gap-2">
             <input 

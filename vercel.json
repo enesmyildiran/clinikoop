@@ -4,11 +4,6 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "env": {
-    "NEXTAUTH_URL": "https://clinikoop.vercel.app",
-    "NEXTAUTH_SECRET": "@nextauth_secret",
-    "DATABASE_URL": "@database_url"
-  },
   "functions": {
     "src/app/**/*.tsx": {
       "maxDuration": 30
@@ -38,10 +33,5 @@
         }
       ]
     }
-  ],
-  "build": {
-    "env": {
-      "DATABASE_URL": "@database_url"
-    }
-  }
+  ]
 } 

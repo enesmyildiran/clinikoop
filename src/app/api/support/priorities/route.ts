@@ -6,16 +6,11 @@ import { prisma } from '@/lib/db';
 // GET - Öncelikleri listele
 export async function GET() {
   try {
-    // Geliştirme modunda session kontrolünü geçici olarak kaldır
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
-    if (!isDevelopment) {
-      const session = await getServerSession(authOptions);
-      
-      if (!session?.user) {
-        return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
-      }
-    }
+    // Session kontrolünü geçici olarak kaldır
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user) {
+    //   return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
+    // }
 
     const priorities = await prisma.supportPriority.findMany({
       where: {
@@ -25,6 +20,30 @@ export async function GET() {
         level: 'asc'
       }
     });
+
+    // Eğer hiç öncelik yoksa, default öncelikler oluştur
+    if (priorities.length === 0) {
+      const defaultPriorities = [
+        { name: 'Düşük', displayName: 'Düşük', color: '#10B981', level: 1 },
+        { name: 'Normal', displayName: 'Normal', color: '#3B82F6', level: 2 },
+        { name: 'Yüksek', displayName: 'Yüksek', color: '#F59E0B', level: 3 },
+        { name: 'Kritik', displayName: 'Kritik', color: '#EF4444', level: 4 }
+      ];
+
+      await prisma.supportPriority.createMany({
+        data: defaultPriorities
+      });
+
+      const newPriorities = await prisma.supportPriority.findMany({
+        where: { isActive: true },
+        orderBy: { level: 'asc' }
+      });
+
+      return NextResponse.json({ 
+        success: true, 
+        priorities: newPriorities 
+      });
+    }
 
     return NextResponse.json({ 
       success: true, 
@@ -42,16 +61,11 @@ export async function GET() {
 // POST - Yeni öncelik oluştur
 export async function POST(request: NextRequest) {
   try {
-    // Geliştirme modunda session kontrolünü geçici olarak kaldır
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    
-    if (!isDevelopment) {
-      const session = await getServerSession(authOptions);
-      
-      if (!session?.user) {
-        return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
-      }
-    }
+    // Session kontrolünü geçici olarak kaldır
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user) {
+    //   return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
+    // }
 
     const body = await request.json();
     const { name, color, level, description, isActive } = body;
