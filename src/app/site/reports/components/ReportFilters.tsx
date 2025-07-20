@@ -41,8 +41,10 @@ export default function ReportFilters({ filters, setFilters, onApply }: ReportFi
         <h3 className="text-base lg:text-lg font-semibold text-gray-800">Filtreler</h3>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-4">
-        <div className="sm:col-span-2 lg:col-span-1">
+      {/* Responsive Grid - Daha iyi düzen */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-4">
+        {/* Tarih Aralığı - 2 kolon kaplar */}
+        <div className="md:col-span-2 lg:col-span-2 xl:col-span-2">
           <label className="block text-xs lg:text-sm font-medium text-gray-700 mb-1">Tarih Aralığı</label>
           <div className="flex gap-2">
             <input 
@@ -60,7 +62,8 @@ export default function ReportFilters({ filters, setFilters, onApply }: ReportFi
           </div>
         </div>
         
-        <div>
+        {/* Para Birimi */}
+        <div className="xl:col-span-1">
           <label className="block text-xs lg:text-sm font-medium text-gray-700 mb-1">Para Birimi</label>
           <select 
             value={filters.currency} 
@@ -72,7 +75,8 @@ export default function ReportFilters({ filters, setFilters, onApply }: ReportFi
           </select>
         </div>
         
-        <div>
+        {/* Satışçı */}
+        <div className="xl:col-span-1">
           <label className="block text-xs lg:text-sm font-medium text-gray-700 mb-1">Satışçı</label>
           <input 
             type="text" 
@@ -83,7 +87,8 @@ export default function ReportFilters({ filters, setFilters, onApply }: ReportFi
           />
         </div>
         
-        <div>
+        {/* Tedavi Türü */}
+        <div className="xl:col-span-1">
           <label className="block text-xs lg:text-sm font-medium text-gray-700 mb-1">Tedavi Türü</label>
           <input 
             type="text" 
@@ -94,7 +99,8 @@ export default function ReportFilters({ filters, setFilters, onApply }: ReportFi
           />
         </div>
         
-        <div>
+        {/* Hasta Kaynağı */}
+        <div className="xl:col-span-1">
           <label className="block text-xs lg:text-sm font-medium text-gray-700 mb-1">Hasta Kaynağı</label>
           <select 
             value={filters.referralSourceId} 
