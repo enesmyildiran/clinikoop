@@ -86,8 +86,14 @@ export async function POST(request: NextRequest) {
       } : null
     });
 
-    // Toplam hesaplamalar
-    const acceptedOffers = offersToUse.filter(offer => offer.status === 'accepted' || offer.status === 'Kabul Edildi' || offer.statusDisplay === 'Kabul Edildi');
+    // Toplam hesaplamalar - status field'ını kullan
+    const acceptedOffers = offersToUse.filter(offer => {
+      const status = offer.status || offer.statusDisplay || '';
+      return status.toLowerCase().includes('accepted') || 
+             status.toLowerCase().includes('kabul') ||
+             status === 'accepted' || 
+             status === 'Kabul Edildi';
+    });
     
     const totalRevenue = acceptedOffers.reduce((sum, offer) => {
       const convertedAmount = convertCurrencySync(offer.amount, offer.currency as any, targetCurr as any);
@@ -96,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     const totalPatients = new Set(offersToUse.map(offer => offer.patientName)).size;
     const totalOffers = offersToUse.length;
-    const acceptedOffersCount = offersToUse.filter(offer => offer.status === 'accepted' || offer.status === 'Kabul Edildi' || offer.statusDisplay === 'Kabul Edildi').length;
+    const acceptedOffersCount = acceptedOffers.length;
     const successRate = totalOffers > 0 ? (acceptedOffersCount / totalOffers) * 100 : 0;
 
     // Aylık veriler

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 import { prisma } from '@/lib/db'
-import bcrypt from 'bcryptjs'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,22 +28,19 @@ export async function GET(request: NextRequest) {
       })
       
       if (!superAdmin) {
-        // Süper admin yoksa oluştur
-        const hashedPassword = await bcrypt.hash('superadmin123', 12)
+        // Süper admin yoksa oluştur (password olmadan)
         superAdmin = await prisma.user.create({
           data: {
             email: 'superadmin@clinikoop.com',
             name: 'Süper Admin',
             role: 'SUPER_ADMIN',
-            password: hashedPassword,
           }
         })
       }
       
       if (superAdmin) {
-        const { password: _, ...userWithoutPassword } = superAdmin
         return NextResponse.json({
-          user: userWithoutPassword,
+          user: superAdmin,
           clinic: null,
           isSuperAdmin: true,
           isDevelopment: true // Frontend'e geliştirme modunda olduğumuzu bildir
@@ -61,9 +59,8 @@ export async function GET(request: NextRequest) {
       })
       
       if (adminUser) {
-        const { password: _, ...userWithoutPassword } = adminUser
         return NextResponse.json({
-          user: userWithoutPassword,
+          user: adminUser,
           clinic: null,
           isSuperAdmin: true,
           isDevelopment: false
