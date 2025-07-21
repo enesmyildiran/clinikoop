@@ -114,9 +114,10 @@ export async function POST(req: NextRequest) {
   try {
     const body: OfferData = await req.json();
     
-    // ClinicId'yi al
+    // KlinikId'yi al
     const clinicId = await getClinicIdFromRequest(req);
     if (!clinicId) {
+      console.error('[offers][POST] Klinik bilgisi bulunamadı!');
       return NextResponse.json({ 
         success: false, 
         error: 'Klinik bilgisi bulunamadı.' 
@@ -301,10 +302,19 @@ export async function POST(req: NextRequest) {
       message: body.status === 'draft' ? 'Teklif taslak olarak kaydedildi' : 'Teklif başarıyla gönderildi'
     });
   } catch (error) {
-    console.error('Teklif kaydetme hatası:', error);
+    let errorMessage = 'Teklif kaydedilemedi.';
+    let errorStack = null;
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      errorStack = error.stack;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+    console.error('[offers][POST] Teklif kaydetme hatası:', errorMessage, errorStack);
     return NextResponse.json({ 
       success: false, 
-      error: 'Teklif kaydedilemedi.' 
+      error: errorMessage,
+      stack: errorStack
     }, { status: 400 });
   }
 }
