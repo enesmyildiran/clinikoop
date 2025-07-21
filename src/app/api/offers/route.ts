@@ -49,9 +49,13 @@ export async function GET(request: NextRequest) {
     const queryClinicId = searchParams.get('clinic');
     const clinicId = queryClinicId || headerClinicId;
 
+    if (!clinicId) {
+      console.error('[offers][GET] Klinik ID bulunamadı! headerClinicId:', headerClinicId, 'queryClinicId:', queryClinicId);
+    }
+
     // Filtreleme koşullarını hazırla
     const whereClause: any = {
-      isActive: true,
+      isDeleted: false,
     };
 
     // Eğer clinicId varsa, sadece o kliniğin tekliflerini getir
@@ -59,39 +63,48 @@ export async function GET(request: NextRequest) {
       whereClause.clinicId = clinicId;
     }
 
-    const offers = await prisma.offer.findMany({
-      where: whereClause,
-      include: {
-        patientOffers: {
-          include: {
-            patient: {
-              select: {
-                id: true,
-                name: true,
-                isActive: true,
+    let offers = [];
+    try {
+      offers = await prisma.offer.findMany({
+        where: whereClause,
+        include: {
+          patientOffers: {
+            include: {
+              patient: {
+                select: {
+                  id: true,
+                  name: true,
+                  isActive: true,
+                },
               },
             },
           },
-        },
-        status: {
-          select: {
-            id: true,
-            name: true,
-            displayName: true,
-            color: true,
+          status: {
+            select: {
+              id: true,
+              name: true,
+              displayName: true,
+              color: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    } catch (prismaError) {
+      console.error('[offers][GET] Prisma findMany error:', prismaError.message, prismaError.stack);
+      return NextResponse.json(
+        { success: false, message: 'Sunucu hatası (prisma)', error: prismaError.message, stack: prismaError.stack },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ success: true, offers })
   } catch (error) {
-    console.error('Error fetching offers:', error)
+    console.error('[offers][GET] Genel hata:', error.message, error.stack)
     return NextResponse.json(
-      { success: false, message: 'Sunucu hatası' },
+      { success: false, message: 'Sunucu hatası', error: error.message, stack: error.stack },
       { status: 500 }
     )
   }
