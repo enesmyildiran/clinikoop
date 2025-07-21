@@ -161,14 +161,7 @@ export async function GET() {
             isActive: true,
           },
         },
-        package: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-            currency: true,
-          },
-        },
+
         _count: {
           select: {
             patients: true,

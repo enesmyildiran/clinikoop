@@ -53,13 +53,13 @@ const clinics: Record<string, Clinic> = {
     email: 'info@test3.com'
   },
   default: {
-    id: 'clinic-default',
-    name: 'Varsayılan Klinik',
-    subdomain: 'default',
+    id: 'cmddb8kzd0000uz7a1dkruh4v',
+    name: 'Test Klinik',
+    subdomain: 'test-klinik',
     primaryColor: '#6B7280',
     address: 'Bilinmeyen Adres',
     phone: '+90 000 000 0000',
-    email: 'info@default.com'
+    email: 'info@testklinik.com'
   }
 }
 

@@ -110,9 +110,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST: Yeni teklif oluştur
 export async function POST(req: NextRequest) {
   try {
-    const body: OfferData = await req.json();
+    const body = await req.json();
     
     // KlinikId'yi al
     const clinicId = await getClinicIdFromRequest(req);
@@ -136,26 +137,24 @@ export async function POST(req: NextRequest) {
     // Önce hasta oluştur veya mevcut hastayı bul
     let patient = await prisma.patient.findFirst({
       where: {
-        phone: body.patientInfo.phone,
+        phone: body.patient?.phone || body.patientInfo?.phone,
         clinicId: clinicId,
-        isActive: true,
+        isDeleted: false,
       },
     });
 
     if (!patient) {
+      const patientData = body.patient || body.patientInfo;
       patient = await prisma.patient.create({
         data: {
-          name: `${body.patientInfo.firstName} ${body.patientInfo.lastName}`,
-          email: body.patientInfo.email,
-          phone: body.patientInfo.phone,
-          notes: body.patientInfo.specialNotes,
+          name: patientData.name || `${patientData.firstName} ${patientData.lastName}`,
+          email: patientData.email,
+          phone: patientData.phone,
+          notes: patientData.notes || patientData.specialNotes,
           clinicId: clinicId
         },
       });
     }
-
-    // Slug oluştur
-    const slug = body.slug || `offer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     // Varsayılan durumu bul
     const defaultStatus = await prisma.offerStatus.findFirst({
@@ -172,20 +171,43 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
 
-    // Teklif oluştur
-    const totalPrice = parseFloat(body.treatmentDetails.reduce((sum, detail) => 
-      sum + detail.toothPricing.reduce((sum, tp) => sum + tp.totalPrice, 0), 0
-    ).toFixed(2));
-    const currency = body.treatmentDetails[0]?.toothPricing[0]?.currency || 'TRY';
-    const vatRate = 20;
-    const vatAmount = parseFloat((totalPrice * vatRate / 100).toFixed(2));
-    const grandTotal = parseFloat((totalPrice + vatAmount).toFixed(2));
+    // Slug oluştur
+    const slug = body.slug || `offer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+    // Basit fiyat hesaplama
+    const treatments = body.treatments || body.treatmentDetails || [];
+    let totalPrice = 0;
+    let currency = 'TRY';
+
+    if (treatments.length > 0) {
+      // Farklı yapıları destekle
+      for (const treatment of treatments) {
+        if (treatment.price) {
+          totalPrice += parseFloat(treatment.price);
+          currency = treatment.currency || currency;
+        } else if (treatment.toothPricing && treatment.toothPricing.length > 0) {
+          for (const pricing of treatment.toothPricing) {
+            totalPrice += parseFloat(pricing.totalPrice || pricing.price || 0);
+            currency = pricing.currency || currency;
+          }
+        }
+      }
+    }
+
+    // Eğer body'de grandTotal varsa onu kullan
+    if (body.grandTotal) {
+      totalPrice = parseFloat(body.grandTotal);
+    }
+    if (body.currency) {
+      currency = body.currency;
+    }
+
+    // Teklif oluştur
     const offer = await prisma.offer.create({
       data: {
         slug: slug,
-        title: `${body.patientInfo.firstName} ${body.patientInfo.lastName} - Tedavi Teklifi`,
-        description: body.treatmentDetails.map(t => t.treatmentName).join(', '),
+        title: body.title || `${patient.name} - Tedavi Teklifi`,
+        description: treatments.map(t => t.name || t.treatmentName).join(', ') || 'Tedavi Teklifi',
         totalPrice: totalPrice,
         currency: currency,
         statusId: defaultStatus.id,
@@ -205,80 +227,28 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Metrikleri kaydet
-    offersCreated.inc({ clinic_id: clinicId, status: defaultStatus.name });
+    // Tedavileri kaydet
+    for (const treatment of treatments) {
+              await prisma.treatment.create({
+          data: {
+            name: treatment.name || treatment.treatmentName,
+            description: treatment.description || '',
+            price: parseFloat(treatment.price || treatment.toothPricing?.[0]?.totalPrice || 0),
+            currency: currency,
+            offerId: offer.id,
+          },
+        });
+    }
 
-    // Tedavileri oluştur
-    for (const treatmentDetail of body.treatmentDetails) {
-      const totalTreatmentPrice = treatmentDetail.toothPricing.reduce((sum, tp) => sum + tp.totalPrice, 0);
-      
-      await prisma.treatment.create({
+    // Not oluştur
+    if (body.notes || body.patientInfo?.specialNotes) {
+      await prisma.note.create({
         data: {
-          name: treatmentDetail.treatmentName,
-          description: treatmentDetail.notes,
-          price: totalTreatmentPrice,
-          quantity: treatmentDetail.selectedTeeth.length,
+          title: 'Teklif Notu',
+          content: body.notes || body.patientInfo.specialNotes,
+          patientId: patient.id,
           offerId: offer.id,
-          selectedTeeth: JSON.stringify(treatmentDetail.selectedTeeth),
-          estimatedDuration: treatmentDetail.estimatedDays || 0,
-        },
-      });
-    }
-
-    // Özel notlar varsa Note olarak ekle
-    // Not oluşturma işlemi: userId zorunlu, alınamıyorsa not oluşturma
-    // (Kullanıcı kimliği frontendden veya oturumdan alınmalı, burada örnek olarak yok)
-    // if (body.patientInfo.specialNotes && userId) {
-    //   await prisma.note.create({
-    //     data: {
-    //       title: 'Özel Notlar',
-    //       content: body.patientInfo.specialNotes,
-    //       isPrivate: true,
-    //       offerId: offer.id,
-    //       clinicId: clinicId,
-    //       userId: userId,
-    //     },
-    //   });
-    // }
-
-    // Şablon ve doğrulama bilgilerini ClinicSetting olarak kaydet
-    if (body.selectedTemplate) {
-      await prisma.clinicSetting.upsert({
-        where: { 
-          clinicId_key: {
-            clinicId: clinicId,
-            key: `offer_${offer.id}_template`
-          }
-        },
-        update: { value: body.selectedTemplate },
-        create: {
-          key: `offer_${offer.id}_template`,
-          value: body.selectedTemplate,
-          clinicId: clinicId,
-        },
-      });
-    }
-
-    if (body.verificationMethod && body.verificationValue) {
-      await prisma.clinicSetting.upsert({
-        where: { 
-          clinicId_key: {
-            clinicId: clinicId,
-            key: `offer_${offer.id}_verification`
-          }
-        },
-        update: { 
-          value: JSON.stringify({
-            method: body.verificationMethod,
-            value: body.verificationValue,
-          })
-        },
-        create: {
-          key: `offer_${offer.id}_verification`,
-          value: JSON.stringify({
-            method: body.verificationMethod,
-            value: body.verificationValue,
-          }),
+          userId: 'system',
           clinicId: clinicId,
         },
       });
@@ -286,25 +256,23 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      offer,
-      slug: offer.slug,
-      message: body.status === 'draft' ? 'Teklif taslak olarak kaydedildi' : 'Teklif başarıyla gönderildi'
+      offer: {
+        id: offer.id,
+        slug: offer.slug,
+        title: offer.title,
+        totalPrice: offer.totalPrice,
+        currency: offer.currency
+      }
     });
-  } catch (error) {
-    let errorMessage = 'Teklif kaydedilemedi.';
-    let errorStack = null;
-    if (error instanceof Error) {
-      errorMessage = error.message;
-      errorStack = error.stack;
-    } else if (typeof error === 'string') {
-      errorMessage = error;
-    }
-    console.error('[offers][POST] Teklif kaydetme hatası:', errorMessage, errorStack);
+
+  } catch (error: any) {
+    console.error('[offers][POST] Hata:', error.message);
+    console.error('[offers][POST] Stack:', error.stack);
     return NextResponse.json({ 
       success: false, 
-      error: errorMessage,
-      stack: errorStack
-    }, { status: 400 });
+      error: error.message,
+      stack: error.stack
+    }, { status: 500 });
   }
 }
 
