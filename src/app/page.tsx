@@ -38,7 +38,7 @@ const TEXTS = {
   tr: {
     title: 'Clinikoop Çok Yakında!',
     desc: 'Diş klinikleri için yeni nesil teklif ve hasta yönetim platformu yakında yayında! Takipte kalın.',
-    contact: 'İletişim: info@clinikoop.com',
+    contact: 'İletişim: info@gmail.com',
     soon: 'Çok Yakında',
     lang: 'Türkçe',
     switch: 'English',
@@ -46,7 +46,7 @@ const TEXTS = {
   en: {
     title: 'Clinikoop Coming Soon!',
     desc: 'A next-gen offer and patient management platform for dental clinics is launching soon! Stay tuned.',
-    contact: 'Contact: info@clinikoop.com',
+    contact: 'Contact: info@gmail.com',
     soon: 'Coming Soon',
     lang: 'English',
     switch: 'Türkçe',
