@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Switch } from '@/components/ui/Switch'
 import { Card, CardContent } from '@/components/ui/Card'
+import Modal from '@/components/ui/Modal';
+import { useRouter } from 'next/navigation';
 
 const defaultPdfSettings = {
   clinicName: 'Clinikoop Diş Klinikleri',
@@ -77,6 +79,9 @@ export default function PDFSettingsPage() {
   const [templates, setTemplates] = useState<PdfTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'settings' | 'templates'>('settings');
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState<PdfTemplate | null>(null);
+  const router = useRouter();
 
   // Ayarları yükle
   useEffect(() => {
@@ -235,6 +240,17 @@ export default function PDFSettingsPage() {
         type: "error"
       });
     }
+  };
+
+  const handlePreview = (tpl: PdfTemplate) => {
+    setPreviewTemplate(tpl);
+    setPreviewOpen(true);
+  };
+  const handleEdit = (tpl: PdfTemplate) => {
+    router.push(`/site/pdf-templates/${tpl.id}/edit`);
+  };
+  const handleCreateNew = () => {
+    router.push('/site/pdf-templates/new');
   };
 
   if (isLoading) {
@@ -517,63 +533,58 @@ export default function PDFSettingsPage() {
       {/* PDF Şablonları Tab */}
       {activeTab === 'templates' && (
         <div className="space-y-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  <FaList className="text-blue-600" />
-                  PDF Şablonları
-                </h3>
-                <Link href="/pdf-templates/new">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                    <FaPlus className="mr-2" />
-                    Yeni Şablon
-                  </Button>
-                </Link>
-              </div>
-              {templatesLoading ? (
-                <div className="text-gray-500">Şablonlar yükleniyor...</div>
-              ) : templates.length === 0 ? (
-                <div className="text-gray-500">Kayıtlı şablon yok.</div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {templates.map((tpl) => (
-                    <div key={tpl.id} className={`border rounded-lg p-4 shadow-sm relative ${tpl.isDefault ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="font-semibold text-gray-800 flex items-center gap-2">
-                          {tpl.isDefault && <FaStar className="text-yellow-400" title="Varsayılan" />}
-                          {tpl.name}
-                        </div>
-                        <div className="flex gap-2">
-                          {!tpl.isDefault && (
-                            <Button size="sm" variant="outline" onClick={() => handleSetDefault(tpl.id)}>
-                              Varsayılan Yap
-                            </Button>
-                          )}
-                          <Button size="sm" variant="outline" onClick={() => handleDelete(tpl.id)}>
-                            <FaTrash className="inline" />
-                          </Button>
-                        </div>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <FaList className="text-blue-600" />
+                PDF Şablonları
+              </h3>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleCreateNew}>
+                <FaPlus className="mr-2" />
+                Yeni şablon
+              </Button>
+            </div>
+            {templatesLoading ? (
+              <div className="text-gray-500">Şablonlar yükleniyor...</div>
+            ) : templates.length === 0 ? (
+              <div className="text-gray-500">Kayıtlı şablon yok.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {templates.map((tpl) => (
+                  <div key={tpl.id} className={`border rounded-lg p-4 shadow-sm relative ${tpl.isDefault ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-semibold text-gray-800 flex items-center gap-2">
+                        {tpl.isDefault && <FaStar className="text-yellow-400" title="Varsayilan" />}
+                        {tpl.name}
                       </div>
-                      <div className="text-xs text-gray-500 mb-2">Oluşturulma: {new Date(tpl.createdAt).toLocaleDateString('tr-TR')}</div>
-                      <div className="mb-2 text-gray-700 text-sm line-clamp-2">{tpl.description}</div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full mt-2"
-                        onClick={() => {
-                          // Şablon önizleme modalı açılabilir veya PDFPreview ile gösterilebilir
-                          addToast({ message: 'Şablon önizleme özelliği yakında!', type: 'info' });
-                        }}
-                      >
-                        Önizle
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => handlePreview(tpl)}>
+                          Önizle
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleEdit(tpl)}>
+                          Düzenle
+                        </Button>
+                      </div>
                     </div>
-                  ))}
+                    <div className="text-xs text-gray-500 mb-2">Oluşturulma: {new Date(tpl.createdAt).toLocaleDateString('tr-TR')}</div>
+                    <div className="mb-2 text-gray-700 text-sm line-clamp-2">{tpl.description}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+          {/* Modal Preview */}
+          <Modal open={previewOpen} onClose={() => setPreviewOpen(false)}>
+            {previewTemplate && (
+              <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+                <h2 className="text-xl font-bold mb-4">{previewTemplate.name} - Önizleme</h2>
+                <div className="border p-4 bg-gray-50 overflow-auto" style={{maxHeight: '70vh'}}>
+                  <div dangerouslySetInnerHTML={{ __html: previewTemplate.content }} />
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <Button className="mt-4" onClick={() => setPreviewOpen(false)}>Kapat</Button>
+              </div>
+            )}
+          </Modal>
         </div>
       )}
     </div>

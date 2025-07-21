@@ -8,6 +8,7 @@ import { FaFilePdf, FaEdit, FaTrash, FaPlus, FaStar, FaEye } from "react-icons/f
 import { cn } from "@/lib/utils";
 import Loading from "@/components/ui/Loading";
 import { useRouter } from "next/navigation";
+import Modal from '@/components/ui/Modal';
 
 interface PdfTemplate {
   id: string;
@@ -27,6 +28,8 @@ export default function PdfTemplatesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { addToast } = useToast();
   const router = useRouter();
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState<PdfTemplate | null>(null);
 
   // Şablonları getir
   const fetchTemplates = async () => {
@@ -79,20 +82,19 @@ export default function PdfTemplatesPage() {
     });
   };
 
-  // Önizle (modal veya yeni sekme açılabilir)
+  // Önizle (modal ile aç)
   const handlePreview = (template: PdfTemplate) => {
-    // Yeni sekmede önizleme sayfası aç
-    window.open(`/pdf-templates/${template.id}/preview`, '_blank');
+    setPreviewTemplate(template);
+    setPreviewOpen(true);
   };
 
   // Düzenle (modal veya ayrı sayfa)
   const handleEdit = (template: PdfTemplate) => {
-    // Düzenleme sayfasına yönlendir
-    router.push(`/pdf-templates/${template.id}/edit`);
+    router.push(`/site/pdf-templates/${template.id}/edit`);
   };
 
   const handleCreateNew = () => {
-    router.push('/pdf-templates/new');
+    router.push('/site/pdf-templates/new');
   };
 
   if (loading) {
@@ -168,6 +170,18 @@ export default function PdfTemplatesPage() {
           </div>
         </CardContent>
       </Card>
+      {/* Modal Preview */}
+      <Modal open={previewOpen} onClose={() => setPreviewOpen(false)}>
+        {previewTemplate && (
+          <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+            <h2 className="text-xl font-bold mb-4">{previewTemplate.name} - Önizleme</h2>
+            <div className="border p-4 bg-gray-50 overflow-auto" style={{maxHeight: '70vh'}}>
+              <div dangerouslySetInnerHTML={{ __html: previewTemplate.content }} />
+            </div>
+            <Button className="mt-4" onClick={() => setPreviewOpen(false)}>Kapat</Button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 } 
