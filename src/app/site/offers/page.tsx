@@ -9,6 +9,7 @@ import { CurrencyCode } from '@/lib/currency'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/Toast'
 import { PageContainer } from '@/components/ui/PageContainer'
+import { useClinic } from '@/contexts/ClinicContext'
 
 export default function OffersPage() {
   const [offers, setOffers] = useState<any[]>([])
@@ -20,6 +21,7 @@ export default function OffersPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { addToast } = useToast()
+  const { clinic } = useClinic();
 
   // Confirm dialog states
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -80,7 +82,9 @@ export default function OffersPage() {
     setLoading(true)
     try {
       console.log('Teklifler yükleniyor...')
-      const res = await fetch('/api/offers')
+      const res = await fetch('/api/offers', {
+        headers: clinic?.id ? { 'x-clinic-id': clinic.id } : undefined
+      })
       const data = await res.json()
       
       console.log('Teklifler API Response:', data)
@@ -137,7 +141,7 @@ export default function OffersPage() {
       if (!offer) return;
       
       // Slug ile sil
-      const res = await fetch(`/api/offers/${offer.slug}`, { method: 'DELETE' });
+      const res = await fetch(`/api/offers/${offer.slug}`, { method: 'DELETE', headers: clinic?.id ? { 'x-clinic-id': clinic.id } : undefined });
       if (res.ok) {
         setOffers(offers.filter(offer => offer.id !== offerToDelete));
         setShowDeleteDialog(false);

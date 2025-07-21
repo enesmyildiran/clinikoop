@@ -10,6 +10,7 @@ import { ToothSelector } from '@/components/ui/ToothSelector'
 import { SocialMediaInputs } from '@/components/ui/SocialMediaInputs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select'
 import { PDFPreview } from '@/components/ui/PDFPreview'
+import { useClinic } from '@/contexts/ClinicContext'
 
 // Tedavi listesini import et
 const TREATMENT_CATEGORIES = [
@@ -40,6 +41,7 @@ export default function OfferEditPage() {
   const [showPdfPreview, setShowPdfPreview] = useState(false)
   const [statuses, setStatuses] = useState<any[]>([])
   const [selectedStatusId, setSelectedStatusId] = useState<string>('')
+  const { clinic } = useClinic();
 
   useEffect(() => {
     if (!offerId) return
@@ -148,7 +150,10 @@ export default function OfferEditPage() {
     
     const res = await fetch(`/api/offers/${offer.slug}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(clinic?.id ? { 'x-clinic-id': clinic.id } : {})
+      },
       body: JSON.stringify(updated),
     })
     
@@ -189,7 +194,10 @@ export default function OfferEditPage() {
     };
     const res = await fetch(`/api/offers/${offer.slug}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(clinic?.id ? { 'x-clinic-id': clinic.id } : {})
+      },
       body: JSON.stringify(updated),
     });
     setIsSaving(false);

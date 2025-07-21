@@ -17,6 +17,7 @@ import { ToothPricingInput } from "@/components/ui/ToothPricingInput";
 import { PDFPreview } from "@/components/ui/PDFPreview";
 import { useToast } from "@/components/ui/Toast";
 import { PageContainer } from "@/components/ui/PageContainer";
+import { useClinic } from '@/contexts/ClinicContext'
 
 const steps = [
   { label: "Hasta Bilgileri" },
@@ -154,6 +155,7 @@ export default function OfferCreatePage() {
     return date.toISOString().split('T')[0];
   });
   const { addToast } = useToast();
+  const { clinic } = useClinic();
 
   // Tedavi seçimi için state
   const [treatmentSearch, setTreatmentSearch] = useState("");
@@ -424,6 +426,7 @@ export default function OfferCreatePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(clinic?.id ? { 'x-clinic-id': clinic.id } : {})
         },
         body: JSON.stringify(offerData),
       });
@@ -497,6 +500,7 @@ export default function OfferCreatePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(clinic?.id ? { 'x-clinic-id': clinic.id } : {})
         },
         body: JSON.stringify(offerData),
       });
@@ -534,6 +538,7 @@ export default function OfferCreatePage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...(clinic?.id ? { 'x-clinic-id': clinic.id } : {})
         },
         body: JSON.stringify(updateData),
       });
