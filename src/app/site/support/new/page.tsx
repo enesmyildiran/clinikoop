@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { PageContainer } from '@/components/ui/PageContainer';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -24,6 +25,7 @@ interface Priority {
 }
 
 export default function NewSupportTicketPage() {
+  const { data: session, status } = useSession();
   const [categories, setCategories] = useState<Category[]>([]);
   const [priorities, setPriorities] = useState<Priority[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,17 +43,30 @@ export default function NewSupportTicketPage() {
   const { addToast } = useToast();
 
   useEffect(() => {
-    fetchOptions();
-  }, []);
+    if (status === 'authenticated') {
+      fetchOptions();
+    }
+  }, [status]);
 
   const fetchOptions = async () => {
     setLoading(true);
     setError(null);
     try {
       const [catRes, priRes] = await Promise.all([
-        fetch('/api/support/categories'),
-        fetch('/api/support/priorities')
+        fetch('/api/support/categories', {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        }),
+        fetch('/api/support/priorities', {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        })
       ]);
+      
       if (!catRes.ok || !priRes.ok) throw new Error('Seçenekler yüklenemedi');
       
       const catData = await catRes.json();
@@ -103,6 +118,26 @@ export default function NewSupportTicketPage() {
       setSubmitting(false);
     }
   };
+
+  // Session loading durumu
+  if (status === 'loading') {
+    return (
+      <PageContainer>
+        <div className="flex items-center justify-center min-h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Yükleniyor...</p>
+          </div>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  // Session yoksa login'e yönlendir
+  if (status === 'unauthenticated') {
+    router.push('/login');
+    return null;
+  }
 
   return (
     <PageContainer>

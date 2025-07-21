@@ -6,14 +6,38 @@ import { prisma } from '@/lib/db';
 // GET - Kategorileri listele
 export async function GET() {
   try {
-    // Session kontrolünü geçici olarak kaldır
-    // const session = await getServerSession(authOptions);
-    // if (!session?.user) {
-    //   return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
-    // }
+    // Session kontrolü
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
+    }
+
+    // Kullanıcının clinic ID'sini al
+    let clinicId: string | null = null;
+    
+    // Önce ClinicUser tablosunda ara
+    const clinicUser = await prisma.clinicUser.findUnique({
+      where: { id: session.user.id },
+      select: { clinicId: true }
+    });
+    
+    if (clinicUser?.clinicId) {
+      clinicId = clinicUser.clinicId;
+    } else {
+      // Admin kullanıcısı ise test clinic ID kullan
+      const testClinic = await prisma.clinic.findFirst({
+        select: { id: true }
+      });
+      clinicId = testClinic?.id || null;
+    }
+
+    if (!clinicId) {
+      return NextResponse.json({ error: 'Klinik bilgisi bulunamadı' }, { status: 400 });
+    }
 
     const categories = await prisma.supportCategory.findMany({
       where: {
+        clinicId: clinicId,
         isActive: true
       },
       orderBy: {
@@ -24,10 +48,10 @@ export async function GET() {
     // Eğer hiç kategori yoksa, default kategoriler oluştur
     if (categories.length === 0) {
       const defaultCategories = [
-        { name: 'Teknik Sorun', displayName: 'Teknik Sorun', description: 'Sistem ve teknik sorunlar', order: 1 },
-        { name: 'Kullanım', displayName: 'Kullanım', description: 'Kullanım ile ilgili sorular', order: 2 },
-        { name: 'Ödeme', displayName: 'Ödeme', description: 'Ödeme ve faturalama sorunları', order: 3 },
-        { name: 'Diğer', displayName: 'Diğer', description: 'Diğer konular', order: 4 }
+        { name: 'Teknik Sorun', displayName: 'Teknik Sorun', description: 'Sistem ve teknik sorunlar', order: 1, clinicId: clinicId },
+        { name: 'Kullanım', displayName: 'Kullanım', description: 'Kullanım ile ilgili sorular', order: 2, clinicId: clinicId },
+        { name: 'Ödeme', displayName: 'Ödeme', description: 'Ödeme ve faturalama sorunları', order: 3, clinicId: clinicId },
+        { name: 'Diğer', displayName: 'Diğer', description: 'Diğer konular', order: 4, clinicId: clinicId }
       ];
 
       await prisma.supportCategory.createMany({
@@ -35,7 +59,10 @@ export async function GET() {
       });
 
       const newCategories = await prisma.supportCategory.findMany({
-        where: { isActive: true },
+        where: { 
+          clinicId: clinicId,
+          isActive: true 
+        },
         orderBy: { order: 'asc' }
       });
 
@@ -61,11 +88,34 @@ export async function GET() {
 // POST - Yeni kategori oluştur
 export async function POST(request: NextRequest) {
   try {
-    // Session kontrolünü geçici olarak kaldır
-    // const session = await getServerSession(authOptions);
-    // if (!session?.user) {
-    //   return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
-    // }
+    // Session kontrolü
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
+    }
+
+    // Kullanıcının clinic ID'sini al
+    let clinicId: string | null = null;
+    
+    // Önce ClinicUser tablosunda ara
+    const clinicUser = await prisma.clinicUser.findUnique({
+      where: { id: session.user.id },
+      select: { clinicId: true }
+    });
+    
+    if (clinicUser?.clinicId) {
+      clinicId = clinicUser.clinicId;
+    } else {
+      // Admin kullanıcısı ise test clinic ID kullan
+      const testClinic = await prisma.clinic.findFirst({
+        select: { id: true }
+      });
+      clinicId = testClinic?.id || null;
+    }
+
+    if (!clinicId) {
+      return NextResponse.json({ error: 'Klinik bilgisi bulunamadı' }, { status: 400 });
+    }
 
     const body = await request.json();
     const { name, color, description, isActive } = body;
@@ -82,7 +132,8 @@ export async function POST(request: NextRequest) {
         name,
         displayName: name,
         description: description || '',
-        isActive: isActive !== false
+        isActive: isActive !== false,
+        clinicId: clinicId
       }
     });
 

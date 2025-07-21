@@ -7,6 +7,7 @@ import { AuditLogger } from "./audit-logger";
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
+      id: "credentials",
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -50,13 +51,20 @@ export const authOptions: NextAuthOptions = {
 
           // Eğer ClinicUser'da bulunamazsa User'da ara (süper admin için)
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email }
+            where: { email: credentials.email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              role: true,
+              password: true
+            }
           });
 
           if (user) {
-            // Environment variable'dan admin şifresini al
-            const adminPassword = process.env.SUPER_ADMIN_PASSWORD || "admin123";
-            if (credentials.email === user.email && credentials.password === adminPassword) {
+            // Database'deki hash'li şifreyi karşılaştır
+            const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+            if (isPasswordValid) {
               // Audit log - successful admin login
               await AuditLogger.logLogin(user.id, true);
               
@@ -91,6 +99,7 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as any).role;
         token.clinicId = (user as any).clinicId;
         token.clinic = (user as any).clinic;
+        token.isSuperAdmin = (user as any).isSuperAdmin;
       }
       return token;
     },
@@ -100,13 +109,10 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).role = token.role as string;
         (session.user as any).clinicId = token.clinicId as string;
         (session.user as any).clinic = token.clinic as any;
+        (session.user as any).isSuperAdmin = token.isSuperAdmin as boolean;
       }
       return session;
     }
-  },
-  pages: {
-    signIn: "/admin-login",
-    error: "/admin-login"
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",

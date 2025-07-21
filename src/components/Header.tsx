@@ -7,6 +7,7 @@ import { useReminders } from '@/contexts/ReminderContext'
 import { useClinic } from '@/contexts/ClinicContext'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
+import { signOut } from 'next-auth/react'
 
 interface HeaderProps {
   className?: string
@@ -31,13 +32,23 @@ export default function Header({ className = '' }: HeaderProps) {
   const userInitial = 'A' // Kullanıcının baş harfi
   const userName = 'Admin User' // Kullanıcı adı
 
-  const handleLogout = () => {
-    // Logout işlemi
+  const handleLogout = async () => {
     addToast({
       message: 'Çıkış yapılıyor...',
       type: 'info'
     })
-    // Gerçek logout işlemi burada yapılacak
+    
+    try {
+      await signOut({ 
+        callbackUrl: '/login',
+        redirect: true 
+      })
+    } catch (error) {
+      addToast({
+        message: 'Çıkış yapılırken hata oluştu',
+        type: 'error'
+      })
+    }
   }
 
   const handleMarkAsDone = async (reminderId: string) => {

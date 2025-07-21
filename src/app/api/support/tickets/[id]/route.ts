@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getClinicIdFromRequest } from '@/lib/clinic-routing';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
 
 // Destek talebi detayını getir
 export async function GET(
@@ -73,6 +75,11 @@ export async function PATCH(
       }, { status: 400 });
     }
 
+    // Session ve rol kontrolü
+    const session = await getServerSession(authOptions);
+    const userRole = session?.user?.role;
+    const isSuperAdmin = session?.user?.isSuperAdmin;
+
     const { id } = params;
     const body = await request.json();
     const { statusId, priorityId, assignedToId, isUrgent } = body;
@@ -94,7 +101,14 @@ export async function PATCH(
 
     // Güncelleme verilerini hazırla
     const updateData: any = {};
-    if (statusId) updateData.statusId = statusId;
+    // Sadece admin/superadmin statusId güncelleyebilir
+    if (statusId) {
+      if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' || isSuperAdmin) {
+        updateData.statusId = statusId;
+      } else {
+        return NextResponse.json({ error: 'Durum güncelleme yetkiniz yok.' }, { status: 403 });
+      }
+    }
     if (priorityId) updateData.priorityId = priorityId;
     if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
     if (isUrgent !== undefined) updateData.isUrgent = isUrgent;

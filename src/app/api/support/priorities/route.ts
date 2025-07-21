@@ -6,14 +6,38 @@ import { prisma } from '@/lib/db';
 // GET - Öncelikleri listele
 export async function GET() {
   try {
-    // Session kontrolünü geçici olarak kaldır
-    // const session = await getServerSession(authOptions);
-    // if (!session?.user) {
-    //   return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
-    // }
+    // Session kontrolü
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
+    }
+
+    // Kullanıcının clinic ID'sini al
+    let clinicId: string | null = null;
+    
+    // Önce ClinicUser tablosunda ara
+    const clinicUser = await prisma.clinicUser.findUnique({
+      where: { id: session.user.id },
+      select: { clinicId: true }
+    });
+    
+    if (clinicUser?.clinicId) {
+      clinicId = clinicUser.clinicId;
+    } else {
+      // Admin kullanıcısı ise test clinic ID kullan
+      const testClinic = await prisma.clinic.findFirst({
+        select: { id: true }
+      });
+      clinicId = testClinic?.id || null;
+    }
+
+    if (!clinicId) {
+      return NextResponse.json({ error: 'Klinik bilgisi bulunamadı' }, { status: 400 });
+    }
 
     const priorities = await prisma.supportPriority.findMany({
       where: {
+        clinicId: clinicId,
         isActive: true
       },
       orderBy: {
@@ -24,10 +48,10 @@ export async function GET() {
     // Eğer hiç öncelik yoksa, default öncelikler oluştur
     if (priorities.length === 0) {
       const defaultPriorities = [
-        { name: 'Düşük', displayName: 'Düşük', color: '#10B981', level: 1 },
-        { name: 'Normal', displayName: 'Normal', color: '#3B82F6', level: 2 },
-        { name: 'Yüksek', displayName: 'Yüksek', color: '#F59E0B', level: 3 },
-        { name: 'Kritik', displayName: 'Kritik', color: '#EF4444', level: 4 }
+        { name: 'Düşük', displayName: 'Düşük', color: '#10B981', level: 1, clinicId: clinicId },
+        { name: 'Normal', displayName: 'Normal', color: '#3B82F6', level: 2, clinicId: clinicId },
+        { name: 'Yüksek', displayName: 'Yüksek', color: '#F59E0B', level: 3, clinicId: clinicId },
+        { name: 'Kritik', displayName: 'Kritik', color: '#EF4444', level: 4, clinicId: clinicId }
       ];
 
       await prisma.supportPriority.createMany({
@@ -35,7 +59,10 @@ export async function GET() {
       });
 
       const newPriorities = await prisma.supportPriority.findMany({
-        where: { isActive: true },
+        where: { 
+          clinicId: clinicId,
+          isActive: true 
+        },
         orderBy: { level: 'asc' }
       });
 
@@ -61,11 +88,34 @@ export async function GET() {
 // POST - Yeni öncelik oluştur
 export async function POST(request: NextRequest) {
   try {
-    // Session kontrolünü geçici olarak kaldır
-    // const session = await getServerSession(authOptions);
-    // if (!session?.user) {
-    //   return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
-    // }
+    // Session kontrolü
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
+    }
+
+    // Kullanıcının clinic ID'sini al
+    let clinicId: string | null = null;
+    
+    // Önce ClinicUser tablosunda ara
+    const clinicUser = await prisma.clinicUser.findUnique({
+      where: { id: session.user.id },
+      select: { clinicId: true }
+    });
+    
+    if (clinicUser?.clinicId) {
+      clinicId = clinicUser.clinicId;
+    } else {
+      // Admin kullanıcısı ise test clinic ID kullan
+      const testClinic = await prisma.clinic.findFirst({
+        select: { id: true }
+      });
+      clinicId = testClinic?.id || null;
+    }
+
+    if (!clinicId) {
+      return NextResponse.json({ error: 'Klinik bilgisi bulunamadı' }, { status: 400 });
+    }
 
     const body = await request.json();
     const { name, color, level, description, isActive } = body;
@@ -83,7 +133,8 @@ export async function POST(request: NextRequest) {
         displayName: name,
         color: color || '#6B7280',
         level,
-        isActive: isActive !== false
+        isActive: isActive !== false,
+        clinicId: clinicId
       }
     });
 

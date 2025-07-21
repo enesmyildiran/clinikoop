@@ -42,8 +42,9 @@ interface OfferData {
 
 export async function GET(request: NextRequest) {
   try {
-    // ClinicId'yi al
-    const clinicId = await getClinicIdFromRequest(request);
+    // ClinicId'yi query parameter'dan al
+    const { searchParams } = new URL(request.url);
+    const clinicId = searchParams.get('clinic');
     
     // Filtreleme koşullarını hazırla
     const whereClause: any = {

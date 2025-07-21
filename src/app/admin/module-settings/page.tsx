@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaCog, FaTag, FaExclamationTriangle, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaCog, FaTag, FaExclamationTriangle, FaPlus, FaEdit, FaTrash, FaFilePdf } from "react-icons/fa";
 import { PageContainer } from '@/components/ui/PageContainer';
 import { useToast } from '@/components/ui/Toast';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -26,7 +26,7 @@ interface Priority {
 }
 
 export default function ModuleSettingsPage() {
-  const [activeTab, setActiveTab] = useState<'categories' | 'priorities'>('categories');
+  const [activeTab, setActiveTab] = useState<'categories' | 'priorities' | 'pdf'>('categories');
   const [categories, setCategories] = useState<Category[]>([]);
   const [priorities, setPriorities] = useState<Priority[]>([]);
   const [loading, setLoading] = useState(true);
@@ -263,6 +263,17 @@ export default function ModuleSettingsPage() {
             >
               <FaExclamationTriangle className="inline mr-2" />
               Destek Talebi Öncelik Seviyeleri
+            </button>
+            <button
+              onClick={() => setActiveTab('pdf')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'pdf'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <FaFilePdf className="inline mr-2" />
+              PDF Ayarları
             </button>
           </nav>
         </div>
@@ -537,6 +548,43 @@ export default function ModuleSettingsPage() {
                     </div>
                   ))
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* PDF Settings Tab */}
+          {activeTab === 'pdf' && (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">PDF Ayarları</h2>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <FaFilePdf className="text-blue-600 text-2xl" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-blue-900 mb-2">PDF Şablon Yönetimi</h3>
+                    <p className="text-blue-700 mb-4">
+                      PDF şablonları ve ayarları bu bölümden yönetilecektir. Yakında aktif olacaktır.
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-blue-600">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        <span>PDF şablon oluşturma ve düzenleme</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-blue-600">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        <span>Şablon önizleme ve test</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-blue-600">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        <span>Varsayılan şablon ayarları</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}

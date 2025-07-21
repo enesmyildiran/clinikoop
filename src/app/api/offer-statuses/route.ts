@@ -12,14 +12,15 @@ const offerStatusSchema = z.object({
   isActive: z.boolean().optional(),
 })
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const clinicId = await getCurrentClinicId();
+    const { searchParams } = new URL(req.url);
+    const clinicId = searchParams.get('clinic');
     
     if (!clinicId) {
       return NextResponse.json(
-        { success: false, message: 'Klinik bulunamadı' },
-        { status: 404 }
+        { success: false, message: 'Klinik ID gerekli' },
+        { status: 400 }
       )
     }
 
@@ -40,12 +41,13 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const clinicId = await getCurrentClinicId();
+    const { searchParams } = new URL(req.url);
+    const clinicId = searchParams.get('clinic');
     
     if (!clinicId) {
       return NextResponse.json(
-        { success: false, message: 'Klinik bulunamadı' },
-        { status: 404 }
+        { success: false, message: 'Klinik ID gerekli' },
+        { status: 400 }
       )
     }
 

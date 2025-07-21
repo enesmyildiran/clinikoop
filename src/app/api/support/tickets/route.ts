@@ -132,26 +132,31 @@ export async function POST(request: Request) {
     }
 
     // Varsayılan durum (Açık)
-    const defaultStatus = await prisma.supportStatus.findFirst({
-      where: { name: 'Açık' }
+    let defaultStatus = await prisma.supportStatus.findFirst({
+      where: { name: 'Açık', clinicId }
     });
 
     if (!defaultStatus) {
-      return NextResponse.json(
-        { error: 'Varsayılan durum bulunamadı' },
-        { status: 500 }
-      );
+      // Eğer yoksa otomatik oluştur
+      defaultStatus = await prisma.supportStatus.create({
+        data: {
+          name: 'Açık',
+          displayName: 'Açık',
+          color: '#10B981',
+          order: 1,
+          isActive: true,
+          clinicId
+        }
+      });
     }
 
     const ticket = await prisma.supportTicket.create({
       data: {
         ticketNumber,
-        title: subject,
         subject,
         description,
         isUrgent,
         clinicId,
-        authorId: createdById,
         createdById: createdById,
         categoryId,
         priorityId,

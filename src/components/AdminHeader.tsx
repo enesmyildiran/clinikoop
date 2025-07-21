@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { FaCog, FaSignOutAlt, FaChevronDown } from 'react-icons/fa'
 import { useToast } from '@/components/ui/Toast'
 import Link from 'next/link'
+import { signOut } from 'next-auth/react'
 
 interface AdminHeaderProps {
   className?: string
@@ -17,13 +18,23 @@ export default function AdminHeader({ className = '' }: AdminHeaderProps) {
   const userInitial = 'A' // Kullanıcının baş harfi
   const userName = 'Admin User' // Kullanıcı adı
 
-  const handleLogout = () => {
-    // Logout işlemi
+  const handleLogout = async () => {
     addToast({
       message: 'Çıkış yapılıyor...',
       type: 'info'
     })
-    // Gerçek logout işlemi burada yapılacak
+    
+    try {
+      await signOut({ 
+        callbackUrl: '/admin-login',
+        redirect: true 
+      })
+    } catch (error) {
+      addToast({
+        message: 'Çıkış yapılırken hata oluştu',
+        type: 'error'
+      })
+    }
   }
 
   return (

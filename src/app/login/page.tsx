@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { FaFacebookF, FaGoogle, FaXTwitter } from 'react-icons/fa6'
 
 export default function LoginPage() {
@@ -17,24 +18,19 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       })
-      if (response.ok) {
-        const data = await response.json()
-        // Kullanıcı tipine göre yönlendirme
-        if (data.isSuperAdmin) {
-          router.push('/admin/dashboard')
-        } else {
-          // Clinic user'lar için site path'i kullan
-          router.push('/site/dashboard')
-        }
-      } else {
-        const data = await response.json()
-        setError(data.message || 'Giriş başarısız')
+      
+      if (result?.error) {
+        setError('Geçersiz e-posta veya şifre')
+      } else if (result?.ok) {
+        // Başarılı giriş, site dashboard'a yönlendir
+        router.push('/site/dashboard')
       }
     } catch (err) {
       setError('Bir hata oluştu')
