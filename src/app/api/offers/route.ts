@@ -124,26 +124,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
     
-    // Kullanıcı oluştur veya mevcut kullanıcıyı bul
-    let user = await prisma.clinicUser.findFirst({
-      where: {
-        email: 'admin@clinikoop.com',
-        clinicId: clinicId,
-      },
-    });
-
-    if (!user) {
-      user = await prisma.clinicUser.create({
-        data: {
-          email: 'admin@clinikoop.com',
-          name: 'Admin User',
-          role: 'ADMIN',
-          password: 'hashedpassword', // Gerçek uygulamada hash'lenmiş olmalı
-          clinicId: clinicId,
-        },
-      });
-    }
-
+    // Kullanıcı oluşturma kodu kaldırıldı. createdById null bırakılıyor.
     // Önce hasta oluştur veya mevcut hastayı bul
     let patient = await prisma.patient.findFirst({
       where: {
@@ -160,8 +141,7 @@ export async function POST(req: NextRequest) {
           email: body.patientInfo.email,
           phone: body.patientInfo.phone,
           notes: body.patientInfo.specialNotes,
-          clinicId: clinicId,
-          createdById: user.id,
+          clinicId: clinicId
         },
       });
     }
@@ -202,7 +182,6 @@ export async function POST(req: NextRequest) {
         currency: currency,
         statusId: defaultStatus.id,
         clinicId: clinicId,
-        createdById: user.id,
         validUntil: body.validUntil ? new Date(body.validUntil) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     });
@@ -246,8 +225,8 @@ export async function POST(req: NextRequest) {
           content: body.patientInfo.specialNotes,
           isPrivate: true,
           offerId: offer.id,
-          userId: user.id,
           clinicId: clinicId,
+          userId: 'system', // Kullanıcı yoksa sabit bir değer
         },
       });
     }
