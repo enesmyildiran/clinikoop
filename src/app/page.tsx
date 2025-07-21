@@ -25,9 +25,9 @@ const TEXTS = {
     soon: 'Çok Yakında',
     lang: 'Türkçe',
     switch: 'English',
-    flag: <TbFlagFilled className="w-6 h-6" />,
-    flagSwitch: <TbFlag className="w-6 h-6" />,
-    mail: 'info [at] clinikoop [dot] com',
+    flag: <Image src="/turkish-flag.png" alt="Türkçe" width={24} height={24} className="inline-block align-middle" />,
+    flagSwitch: <Image src="/english-flag.png" alt="English" width={24} height={24} className="inline-block align-middle" />,
+    mail: 'info [@] clinikoop [.] com',
     mailCopy: 'info@clinikoop.com',
     mailLabel: 'E-posta adresini kopyala',
   },
@@ -38,8 +38,8 @@ const TEXTS = {
     soon: 'Coming Soon',
     lang: 'English',
     switch: 'Türkçe',
-    flag: <TbFlag className="w-6 h-6" />,
-    flagSwitch: <TbFlagFilled className="w-6 h-6" />,
+    flag: <Image src="/english-flag.png" alt="English" width={24} height={24} className="inline-block align-middle" />,
+    flagSwitch: <Image src="/turkish-flag.png" alt="Türkçe" width={24} height={24} className="inline-block align-middle" />,
     mail: 'info [at] clinikoop [dot] com',
     mailCopy: 'info@clinikoop.com',
     mailLabel: 'Copy email address',
@@ -65,13 +65,17 @@ export default function ComingSoonPage() {
           onClick={() => setLang(lang === 'tr' ? 'en' : 'tr')}
           aria-label={t.switch}
         >
-          {lang === 'tr' ? <span className="flex items-center gap-1">{TEXTS.en.flag} <span className="hidden md:inline">EN</span></span> : <span className="flex items-center gap-1">{TEXTS.tr.flag} <span className="hidden md:inline">TR</span></span>}
+          {lang === 'tr' ? (
+            <span className="flex items-center gap-1">{TEXTS.en.flag}<span className="hidden md:inline">EN</span></span>
+          ) : (
+            <span className="flex items-center gap-1">{TEXTS.tr.flag}<span className="hidden md:inline">TR</span></span>
+          )}
         </button>
       </div>
       <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-12 flex flex-col items-center border border-blue-100 relative z-10">
         <div className="mb-6 flex items-center justify-center">
           <div className="rounded-full bg-blue-900 p-2 md:p-6 shadow-lg flex items-center justify-center" style={{ width: 160, height: 160 }}>
-            <Image src="/logo.png" alt="Clinikoop Logo" width={128} height={128} className="object-contain" priority />
+            <Image src="/logo2.png" alt="Clinikoop Logo" width={128} height={128} className="object-contain" priority />
           </div>
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-blue-700 mb-4 text-center">{t.title}</h1>
