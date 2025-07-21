@@ -116,15 +116,23 @@ export async function POST(req: NextRequest) {
     
     // KlinikId'yi al
     const clinicId = await getClinicIdFromRequest(req);
+    // KlinikId kontrolü ve veritabanında var mı kontrolü
     if (!clinicId) {
-      console.error('[offers][POST] Klinik bilgisi bulunamadı!');
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Klinik bilgisi bulunamadı.' 
+      console.warn('[offers][POST] clinicId yok, hasta oluşturulmadı');
+      return NextResponse.json({
+        success: false,
+        error: 'Klinik bilgisi bulunamadı.'
+      }, { status: 400 });
+    }
+    const clinicExists = await prisma.clinic.findUnique({ where: { id: clinicId } });
+    if (!clinicExists) {
+      console.warn('[offers][POST] Belirtilen clinicId veritabanında bulunamadı:', clinicId);
+      return NextResponse.json({
+        success: false,
+        error: 'Belirtilen clinicId veritabanında bulunamadı.'
       }, { status: 400 });
     }
     
-    // Kullanıcı oluşturma kodu kaldırıldı. createdById null bırakılıyor.
     // Önce hasta oluştur veya mevcut hastayı bul
     let patient = await prisma.patient.findFirst({
       where: {

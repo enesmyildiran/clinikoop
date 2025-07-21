@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,59 +8,56 @@ datasource db {
 }
 
 model Clinic {
-  id                    String   @id @default(cuid())
+  id                    String            @id @default(cuid())
   name                  String
-  subdomain             String   @unique
+  subdomain             String            @unique
   domain                String?
-  isActive              Boolean  @default(true)
-  maxUsers              Int      @default(10)
-  maxPatients           Int      @default(1000)
-  maxOffers             Int      @default(5000)
+  isActive              Boolean           @default(true)
+  maxUsers              Int               @default(10)
+  maxPatients           Int               @default(1000)
+  maxOffers             Int               @default(5000)
   subscriptionStartDate DateTime?
   subscriptionEndDate   DateTime?
-  subscriptionStatus    String   @default("TRIAL")
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
+  subscriptionStatus    String            @default("TRIAL")
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  settings              ClinicSetting[]
   users                 ClinicUser[]
-  patients              Patient[]
+  notes                 Note[]
+  offerStatuses         OfferStatus[]
   offers                Offer[]
   patientOffers         PatientOffer[]
-  reminders             Reminder[]
-  notes                 Note[]
-  settings              ClinicSetting[]
-  tickets               SupportTicket[]
-  offerStatuses         OfferStatus[]
+  patients              Patient[]
+  pdfTemplates          PDFTemplate[]
   referralSources       ReferralSource[]
+  reminders             Reminder[]
   supportCategories     SupportCategory[]
   supportPriorities     SupportPriority[]
   supportStatuses       SupportStatus[]
-  pdfTemplates          PDFTemplate[]
+  tickets               SupportTicket[]
 
   @@map("clinics")
 }
 
 model ClinicUser {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  name        String
-  role        String   @default("USER")
-  password    String
-  isActive    Boolean  @default(true)
-  permissions String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  clinicId    String
-  clinic      Clinic   @relation(fields: [clinicId], references: [id])
-
-  patients    Patient[]
-  offers      Offer[]
-  reminders   Reminder[]
-  notes       Note[]
-  messages    SupportMessage[]
-  createdTickets SupportTicket[] @relation("TicketCreatedBy")
-  assignedTickets SupportTicket[] @relation("TicketAssignedTo")
+  id              String           @id @default(cuid())
+  email           String           @unique
+  name            String
+  role            String           @default("USER")
+  password        String
+  isActive        Boolean          @default(true)
+  permissions     String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  clinicId        String
+  clinic          Clinic           @relation(fields: [clinicId], references: [id])
+  notes           Note[]
+  offers          Offer[]
+  patients        Patient[]
+  reminders       Reminder[]
+  messages        SupportMessage[]
+  assignedTickets SupportTicket[]  @relation("TicketAssignedTo")
+  createdTickets  SupportTicket[]  @relation("TicketCreatedBy")
 
   @@map("clinic_users")
 }
@@ -75,7 +69,6 @@ model ClinicSetting {
   category  String   @default("general")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   clinicId  String
   clinic    Clinic   @relation(fields: [clinicId], references: [id])
 
@@ -88,7 +81,7 @@ model User {
   email     String   @unique
   name      String
   role      String   @default("SUPER_ADMIN")
-  password  String?  // Optional for development
+  password  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -96,39 +89,34 @@ model User {
 }
 
 model Patient {
-  id                String   @id @default(cuid())
-  name              String
-  email             String?
-  phone             String?
-  birthDate         DateTime?
-  gender            String?
-  address           String?
-  city              String?
-  country           String   @default("TR")
-  nationality       String   @default("TR")
-  phoneCountry      String   @default("+90")
-  notes             String?
-  isActive          Boolean  @default(true)
-  isDeleted         Boolean  @default(false)
-  referralSourceId  String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  medicalHistory    String?
-  allergies         String?
-  medications       String?
-  emergencyContact  String?
-
-  clinicId          String
-  clinic            Clinic   @relation(fields: [clinicId], references: [id])
-  
-  createdById       String?
-  createdBy         ClinicUser? @relation(fields: [createdById], references: [id])
-
-  offers            PatientOffer[]
-  reminders         Reminder[]
-
-  referralSource    ReferralSource? @relation(fields: [referralSourceId], references: [id])
+  id               String          @id @default(cuid())
+  name             String
+  email            String?
+  phone            String?
+  birthDate        DateTime?
+  gender           String?
+  address          String?
+  city             String?
+  country          String          @default("TR")
+  nationality      String          @default("TR")
+  phoneCountry     String          @default("+90")
+  notes            String?
+  isActive         Boolean         @default(true)
+  isDeleted        Boolean         @default(false)
+  referralSourceId String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  medicalHistory   String?
+  allergies        String?
+  medications      String?
+  emergencyContact String?
+  clinicId         String
+  createdById      String?
+  offers           PatientOffer[]
+  clinic           Clinic          @relation(fields: [clinicId], references: [id])
+  createdBy        ClinicUser?     @relation(fields: [createdById], references: [id])
+  referralSource   ReferralSource? @relation(fields: [referralSourceId], references: [id])
+  reminders        Reminder[]
 
   @@map("patients")
 }
@@ -143,44 +131,37 @@ model OfferStatus {
   isDefault   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   clinicId    String
   clinic      Clinic   @relation(fields: [clinicId], references: [id])
-
   offers      Offer[]
 
   @@map("offer_statuses")
 }
 
 model Offer {
-  id                String   @id @default(cuid())
+  id                String         @id @default(cuid())
   title             String
   description       String?
   totalPrice        Float
-  currency          String   @default("TRY")
+  currency          String         @default("TRY")
   validUntil        DateTime?
-  isDeleted         Boolean  @default(false)
-  slug              String   @unique
+  isDeleted         Boolean        @default(false)
+  slug              String         @unique
   pdfTemplateId     String?
   estimatedDuration Int?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
   clinicId          String
-  clinic            Clinic   @relation(fields: [clinicId], references: [id])
-  
   createdById       String?
-  createdBy         ClinicUser? @relation(fields: [createdById], references: [id])
-
   statusId          String?
-  status            OfferStatus? @relation(fields: [statusId], references: [id])
-
-  pdfTemplate       PDFTemplate? @relation(fields: [pdfTemplateId], references: [id])
-
-  treatments        Treatment[]
+  notes             Note[]
+  clinic            Clinic         @relation(fields: [clinicId], references: [id])
+  createdBy         ClinicUser?    @relation(fields: [createdById], references: [id])
+  pdfTemplate       PDFTemplate?   @relation(fields: [pdfTemplateId], references: [id])
+  status            OfferStatus?   @relation(fields: [statusId], references: [id])
   patientOffers     PatientOffer[]
   reminders         Reminder[]
-  notes             Note[]
+  treatments        Treatment[]
 
   @@map("offers")
 }
@@ -194,10 +175,9 @@ model PatientOffer {
   visible   Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  patient   Patient  @relation(fields: [patientId], references: [id])
-  offer     Offer    @relation(fields: [offerId], references: [id])
   clinic    Clinic   @relation(fields: [clinicId], references: [id])
+  offer     Offer    @relation(fields: [offerId], references: [id])
+  patient   Patient  @relation(fields: [patientId], references: [id])
 
   @@unique([patientId, offerId])
   @@map("patient_offers")
@@ -218,7 +198,6 @@ model Treatment {
   isDeleted         Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-
   offerId           String
   offer             Offer    @relation(fields: [offerId], references: [id])
 
@@ -226,45 +205,38 @@ model Treatment {
 }
 
 model Note {
-  id          String   @id @default(cuid())
-  title       String
-  content     String
-  isPrivate   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  clinicId    String
-  clinic      Clinic   @relation(fields: [clinicId], references: [id])
-  
-  userId      String
-  user        ClinicUser @relation(fields: [userId], references: [id])
-
-  offerId     String?
-  offer       Offer? @relation(fields: [offerId], references: [id])
+  id        String     @id @default(cuid())
+  title     String
+  content   String
+  isPrivate Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  clinicId  String
+  userId    String
+  offerId   String?
+  clinic    Clinic     @relation(fields: [clinicId], references: [id])
+  offer     Offer?     @relation(fields: [offerId], references: [id])
+  user      ClinicUser @relation(fields: [userId], references: [id])
 
   @@map("notes")
 }
 
 model Reminder {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   title       String
   description String?
   dueDate     DateTime
-  isCompleted Boolean  @default(false)
-  isPinned    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  isCompleted Boolean    @default(false)
+  isPinned    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   clinicId    String
-  clinic      Clinic   @relation(fields: [clinicId], references: [id])
-  
   patientId   String?
-  patient     Patient? @relation(fields: [patientId], references: [id])
-  
   offerId     String?
-  offer       Offer? @relation(fields: [offerId], references: [id])
-  
   userId      String
+  clinic      Clinic     @relation(fields: [clinicId], references: [id])
+  offer       Offer?     @relation(fields: [offerId], references: [id])
+  patient     Patient?   @relation(fields: [patientId], references: [id])
   user        ClinicUser @relation(fields: [userId], references: [id])
 
   @@map("reminders")
@@ -282,141 +254,123 @@ model Setting {
 }
 
 model ReferralSource {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String    @id @default(cuid())
+  name        String    @unique
   displayName String
   description String?
-  color       String   @default("#6B7280")
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  isDeleted   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  color       String    @default("#6B7280")
+  order       Int       @default(0)
+  isActive    Boolean   @default(true)
+  isDeleted   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   clinicId    String
-  clinic      Clinic   @relation(fields: [clinicId], references: [id])
-
   patients    Patient[]
+  clinic      Clinic    @relation(fields: [clinicId], references: [id])
 
   @@map("referral_sources")
 }
 
 model SupportCategory {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String          @id @default(cuid())
+  name        String          @unique
   displayName String
   description String?
-  color       String   @default("#6B7280")
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  isDeleted   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  color       String          @default("#6B7280")
+  order       Int             @default(0)
+  isActive    Boolean         @default(true)
+  isDeleted   Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   clinicId    String
-  clinic      Clinic   @relation(fields: [clinicId], references: [id])
-
+  clinic      Clinic          @relation(fields: [clinicId], references: [id])
   tickets     SupportTicket[]
 
   @@map("support_categories")
 }
 
 model SupportTicket {
-  id            String   @id @default(cuid())
-  ticketNumber  String   @unique
-  subject       String
-  description   String
-  isUrgent      Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  clinicId      String
-  clinic        Clinic   @relation(fields: [clinicId], references: [id])
-  
-  categoryId    String?
-  category      SupportCategory? @relation(fields: [categoryId], references: [id])
-  
-  priorityId    String?
-  priority      SupportPriority? @relation(fields: [priorityId], references: [id])
-  
-  statusId      String?
-  status        SupportStatus? @relation(fields: [statusId], references: [id])
-  
-  createdById   String
-  createdBy     ClinicUser @relation("TicketCreatedBy", fields: [createdById], references: [id])
-  
-  assignedToId  String?
-  assignedTo    ClinicUser? @relation("TicketAssignedTo", fields: [assignedToId], references: [id])
-
-  messages      SupportMessage[]
-  attachments   SupportAttachment[]
+  id           String              @id @default(cuid())
+  ticketNumber String              @unique
+  subject      String
+  description  String
+  isUrgent     Boolean             @default(false)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  clinicId     String
+  categoryId   String?
+  priorityId   String?
+  statusId     String?
+  createdById  String
+  assignedToId String?
+  attachments  SupportAttachment[]
+  messages     SupportMessage[]
+  assignedTo   ClinicUser?         @relation("TicketAssignedTo", fields: [assignedToId], references: [id])
+  category     SupportCategory?    @relation(fields: [categoryId], references: [id])
+  clinic       Clinic              @relation(fields: [clinicId], references: [id])
+  createdBy    ClinicUser          @relation("TicketCreatedBy", fields: [createdById], references: [id])
+  priority     SupportPriority?    @relation(fields: [priorityId], references: [id])
+  status       SupportStatus?      @relation(fields: [statusId], references: [id])
 
   @@map("support_tickets")
 }
 
 model SupportMessage {
-  id        String   @id @default(cuid())
-  content   String
-  isInternal Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  ticketId  String
-  ticket    SupportTicket @relation(fields: [ticketId], references: [id])
-  
-  authorId  String
-  author    ClinicUser @relation(fields: [authorId], references: [id])
+  id         String        @id @default(cuid())
+  content    String
+  isInternal Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  ticketId   String
+  authorId   String
+  author     ClinicUser    @relation(fields: [authorId], references: [id])
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id])
 
   @@map("support_messages")
 }
 
 model SupportPriority {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String          @id @default(cuid())
+  name        String          @unique
   displayName String
-  level       Int      @default(1)
-  color       String   @default("#6B7280")
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  isDeleted   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  level       Int             @default(1)
+  color       String          @default("#6B7280")
+  order       Int             @default(0)
+  isActive    Boolean         @default(true)
+  isDeleted   Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   clinicId    String
-  clinic      Clinic   @relation(fields: [clinicId], references: [id])
-
+  clinic      Clinic          @relation(fields: [clinicId], references: [id])
   tickets     SupportTicket[]
 
   @@map("support_priorities")
 }
 
 model SupportStatus {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String          @id @default(cuid())
+  name        String          @unique
   displayName String
-  color       String   @default("#6B7280")
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  isDeleted   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  color       String          @default("#6B7280")
+  order       Int             @default(0)
+  isActive    Boolean         @default(true)
+  isDeleted   Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   clinicId    String
-  clinic      Clinic   @relation(fields: [clinicId], references: [id])
-
+  clinic      Clinic          @relation(fields: [clinicId], references: [id])
   tickets     SupportTicket[]
 
   @@map("support_statuses")
 }
 
 model SupportAttachment {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   filename  String
   filepath  String
   filesize  Int
   mimetype  String
-  createdAt DateTime @default(now())
-
+  createdAt DateTime      @default(now())
   ticketId  String
   ticket    SupportTicket @relation(fields: [ticketId], references: [id])
 
@@ -431,11 +385,9 @@ model PDFTemplate {
   isDefault   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   clinicId    String
-  clinic      Clinic   @relation(fields: [clinicId], references: [id])
-
   offers      Offer[]
+  clinic      Clinic   @relation(fields: [clinicId], references: [id])
 
   @@map("pdf_templates")
 }
@@ -449,4 +401,4 @@ model RateLimit {
   updatedAt DateTime @updatedAt
 
   @@map("rate_limits")
-} 
+}
