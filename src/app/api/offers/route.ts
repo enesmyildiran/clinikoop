@@ -42,15 +42,18 @@ interface OfferData {
 
 export async function GET(request: NextRequest) {
   try {
-    // ClinicId'yi query parameter'dan al
+    // Klinik ID'yi önce header'dan al
+    const headerClinicId = await getClinicIdFromRequest(request);
+    // Query parametresinden de al (varsa öncelikli)
     const { searchParams } = new URL(request.url);
-    const clinicId = searchParams.get('clinic');
-    
+    const queryClinicId = searchParams.get('clinic');
+    const clinicId = queryClinicId || headerClinicId;
+
     // Filtreleme koşullarını hazırla
     const whereClause: any = {
       isActive: true,
     };
-    
+
     // Eğer clinicId varsa, sadece o kliniğin tekliflerini getir
     if (clinicId) {
       whereClause.clinicId = clinicId;
