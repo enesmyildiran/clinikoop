@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { FaYoutube, FaLinkedin, FaPinterest, FaTiktok, FaXTwitter, FaInstagram, FaFacebook } from 'react-icons/fa6';
+import { FaYoutube, FaLinkedin, FaPinterest, FaTiktok, FaXTwitter, FaInstagram, FaFacebook, FaMedium } from 'react-icons/fa6';
 import { FiCopy } from 'react-icons/fi';
 import { TfiWorld } from 'react-icons/tfi';
 import { TbFlag, TbFlagFilled } from 'react-icons/tb';
@@ -15,6 +15,7 @@ const SOCIALS = [
   { href: 'https://x.com/Clinikoop', icon: <FaXTwitter />, label: 'X' },
   { href: 'https://www.instagram.com/clinikoop/', icon: <FaInstagram />, label: 'Instagram' },
   { href: 'https://www.facebook.com/Clinikoop', icon: <FaFacebook />, label: 'Facebook' },
+  { href: 'https://medium.com/@clinikoop', icon: <FaMedium />, label: 'Medium' },
 ];
 
 const TEXTS = {
@@ -27,8 +28,8 @@ const TEXTS = {
     switch: 'English',
     flag: <Image src="/turkish-flag.png" alt="Türkçe" width={24} height={24} className="inline-block align-middle" />,
     flagSwitch: <Image src="/english-flag.png" alt="English" width={24} height={24} className="inline-block align-middle" />,
-    mail: 'info [@] clinikoop [.] com',
-    mailCopy: 'info@clinikoop.com',
+    mail: 'clinikoop [@] gmail [.] com',
+    mailCopy: 'clinikoop@gmail.com',
     mailLabel: 'E-posta adresini kopyala',
   },
   en: {
@@ -40,8 +41,8 @@ const TEXTS = {
     switch: 'Türkçe',
     flag: <Image src="/english-flag.png" alt="English" width={24} height={24} className="inline-block align-middle" />,
     flagSwitch: <Image src="/turkish-flag.png" alt="Türkçe" width={24} height={24} className="inline-block align-middle" />,
-    mail: 'info [at] clinikoop [dot] com',
-    mailCopy: 'info@clinikoop.com',
+    mail: 'clinikoop [at] gmail [dot] com',
+    mailCopy: 'clinikoop@gmail.com',
     mailLabel: 'Copy email address',
   },
 };
@@ -74,8 +75,8 @@ export default function ComingSoonPage() {
       </div>
       <div className="bg-white/90 rounded-2xl shadow-xl p-6 md:p-12 flex flex-col items-center border border-blue-100 relative z-10">
         <div className="mb-6 flex items-center justify-center">
-          <div className="rounded-full bg-blue-900 p-2 md:p-6 shadow-lg flex items-center justify-center" style={{ width: 160, height: 160 }}>
-            <Image src="/logo2.png" alt="Clinikoop Logo" width={128} height={128} className="object-contain" priority />
+          <div className="rounded-full bg-blue-900 p-2 md:p-4 shadow-lg flex items-center justify-center" style={{ width: 112, height: 112 }}>
+            <Image src="/logo.png" alt="Clinikoop Logo" width={80} height={80} className="object-contain" priority />
           </div>
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-blue-700 mb-4 text-center">{t.title}</h1>
