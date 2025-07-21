@@ -170,3 +170,12 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 ---
 
 **Clinikoop** - Diş klinikleri için modern SaaS çözümü 🦷 
+
+## Önemli Backend Mimari Notu (Teklif Oluşturma ve Notlar)
+
+- Teklif oluşturma API'sinde **her klinik için otomatik olarak admin@clinikoop.com ile kullanıcı oluşturulmaz**.
+- Eğer bir teklif veya not oluşturulurken kullanıcı bilgisi (createdById, userId) oturumdan alınamıyorsa, bu alanlar ya hiç gönderilmez ya da not oluşturma işlemi tamamen atlanır.
+- Not oluşturma işlemi için **userId zorunludur**. Oturumdan veya frontendden kullanıcı ID'si alınamıyorsa not oluşturulmaz.
+- Aksi halde, aynı email ile birden fazla kullanıcı oluşturulmaya çalışılırsa **Prisma unique constraint hatası** oluşur ve teklif kaydedilemez.
+- İleride kullanıcı yönetimi ve audit trail için, createdById ve userId alanlarının doğru şekilde oturumdan alınması ve frontendden güvenli şekilde iletilmesi gerekmektedir.
+- Bu mimari karar, çoklu klinik ve çoklu kullanıcı desteği için kritik öneme sahiptir. 

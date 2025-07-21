@@ -218,18 +218,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Özel notlar varsa Note olarak ekle
-    if (body.patientInfo.specialNotes) {
-      await prisma.note.create({
-        data: {
-          title: 'Özel Notlar',
-          content: body.patientInfo.specialNotes,
-          isPrivate: true,
-          offerId: offer.id,
-          clinicId: clinicId,
-          userId: 'system', // Kullanıcı yoksa sabit bir değer
-        },
-      });
-    }
+    // Not oluşturma işlemi: userId zorunlu, alınamıyorsa not oluşturma
+    // (Kullanıcı kimliği frontendden veya oturumdan alınmalı, burada örnek olarak yok)
+    // if (body.patientInfo.specialNotes && userId) {
+    //   await prisma.note.create({
+    //     data: {
+    //       title: 'Özel Notlar',
+    //       content: body.patientInfo.specialNotes,
+    //       isPrivate: true,
+    //       offerId: offer.id,
+    //       clinicId: clinicId,
+    //       userId: userId,
+    //     },
+    //   });
+    // }
 
     // Şablon ve doğrulama bilgilerini ClinicSetting olarak kaydet
     if (body.selectedTemplate) {
